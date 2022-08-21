@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="user-scalable=0, initial-scale=1,minimum-scale=1, maximum-scale=1, width=device-width, minimal-ui=1">
+  <title>backgammon</title>
+
+  <link rel="stylesheet" href="style/style.css">
+  <script src="js/app.js"></script>
+  <style>
+    @font-face {
+      font-family: lalezar;
+      src: url(fonts/lalezar.ttf);
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      margin: 0;
+      padding: 0;
+      background: #191432;
+      font-family: 'lalezar';
+    }
+
+    #phaser-game {
+      width: 100%;
+      height: 100%;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    #game {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .row {
+      display: flex;
+      flex-direction: row;
+    }
+
+    .dot {
+      height: var(--dot-width);
+      width: var(--dot-height);
+      background-color: #453C6B;
+      border-radius: 50%;
+    }
+
+    .box {
+      height: var(--box-height);
+      width: var(--box-width);
+    }
+
+    .horizContainer {
+      height: var(--dot-height);
+      width: var(--box-width);
+      border: 2px;
+    }
+
+    .vertContainer {
+      height: var(--box-height);
+      width: var(--dot-width);
+      border: 2px;
+    }
+
+    #board {
+      display: flex;
+      flex-direction: column;
+      padding: 10px 50px;
+      margin: 10px
+    }
+
+    #header {
+      padding: 10px 50px;
+      margin: 10px
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id='phaser-game'></div>
+</body>
+<!-- frameworks -->
+<script src="js/phaser.min.js"></script>
+<script src="js/socket.io.js"></script>
+<script src="js/nineslice.js"></script>
+<!-- scenes -->
+<script src="js/scenes/sceneWaiting.js"></script>
+<script src="js/scenes/sceneLoad.js"></script>
+<script src="js/scenes/sceneChessBoard.js"></script>
+<!-- mc -->
+<script src="js/constants.js"></script>
+<script src="js/classes/mc/model.js"></script>
+<script src="js/classes/mc/controller.js"></script>
+<!-- components -->
+<script src="js/classes/comps/UserBox.js"></script>
+<script src="js/classes/comps/ProgressBox.js"></script>
+<script src="js/classes/comps/ScoreBox.js"></script>
+<script src="js/classes/comps/TurnBox.js"></script>
+<script src="js/classes/comps/Chess_board.js"></script>
+<script src="js/classes/comps/Nut.js"></script>
+<!-- utils -->
+<script src="js/classes/util/align.js"></script>
+<script src="js/classes/util/alignGrid.js"></script>
+<script src="js/classes/util/Base64Utils.js"></script>
+<script src="js/classes/util/PersianNumUtil.js"></script>
+
+<script>
+  var game;
+  var model;
+  var emitter;
+  var G;
+  var controller;
+  var battle = {
+    _id: '{{battle_id}}'
+  };
+  var client = {
+    id: 294751
+  }
+  var opponent = {
+    id: 462472
+  }
+  var has_submitted_ready = false;
+
+  const my_avatar_url = "{{my_avatar_url}}"
+  const opponent_avatar_url = "{{opponent_avatar_url}}"
+  const opponent_hero_url = "{{opponent_hero_url}}"
+
+  const my_name = "{{my_name}}"
+  const opponent_name = "{{opponent_name}}"
+
+  // ========================================================= TEST
+  // const socket = io('http://localhost:4855/', {
+  //   timeout: 60 * 1000,
+  //   reconnection: false,
+  //   forceNew: true,
+  //   query: {
+  //     authorization: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiZDNhNjAyODc0NjE2NDgzOGE2N2U2ZmE1NGY2NzllMmFiN2QwZDRhYzQ1OGEyOTIxYzYzZjY4NjY5YzZlZDBiMWU2Nzg5MWY0NzUxYzEyNWQiLCJpYXQiOjE2NDI0Mjg4OTAuNjEyMjgzOTQ1MDgzNjE4MTY0MDYyNSwibmJmIjoxNjQyNDI4ODkwLjYxMjI4Nzk5ODE5OTQ2Mjg5MDYyNSwiZXhwIjoxNjczOTY0ODkwLjYwOTM4OTA2NjY5NjE2Njk5MjE4NzUsInN1YiI6IjY5OTIiLCJzY29wZXMiOltdfQ.ipe5GiZvOMnNDbCf-kVrF6ZvyUcDGC6nZo45uqXhlNoC8IVrrKYnObf6v3UWi_0v0PoOkK7oELrV60aNyaJ5oentRGrwz42CRFvMugW9de1M2aU961d1GNuxKj-8BxminvIeCPeCIWyTC6r-JUGiSFns3VFIT6qZePwP6ZpQYcoWv_mMVvoVJLhwZDaaz1wDgqa23IxqDqv1SHSTJJIsNxrCNnGM1oeF8FELTgXWGLNSo_Xk68g3b3Ob-8vJYq_6ehPB5teFfde189HeYT9SRuzWBFUuE86M9VLHdzB2tN6BfQY4gzLbyInswweYYa7KuYpTNp7vOeGkRH0mFqj-fkGDk6mh9c3PSceHn1YAgoDdqo5eIgdPcMSHHdW0AAZcR5-B6UdY5SUPgT1pqZEm4HdNo9M2v3UGQy4VwxnQPN_3W9XaIhEeMnAcmVm2UySKSc0T5flW5arxyVcpc_snP8pAkBJAMkU1GHnxa3G-DrzQBIN6RB2Q4gqgO8Hd0st56oAoSVlrSCOi_roQcfeVuIjjynOuzhhCAM0v1segL9NqC8Qxj7k_MSl-UeW1aBX4T2iW44UtSlOLtLMpTCnXJTy-E3_u7aZ5CUCTosKaJwFAM4HdyqH7RfxWY_Vqe2A8Pr3fx3pN-oxcQpyOjbevj-m-KqqcxdgjXomk0BWIUwQ"
+  //   }
+  // });
+  // socket.connect();
+  // ========================================================= TEST
+
+  window.onload = function () {
+    let config = {
+      type: Phaser.AUTO,
+      width: 1080,
+      height: 1920,
+      parent: 'phaser-game',
+      antialias: true,
+      transparent: true,
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      },
+      physics: {
+        default: 'arcade',
+        arcade: {
+          debug: false
+        }
+      },
+      // pixelArt: true,
+      plugins: {
+        global: [NineSlice.Plugin.DefaultCfg],
+      },
+      scene: [
+        // SceneLoad,
+        // SceneWaiting,
+        SceneChessBoard
+      ]
+    };
+
+    emitter = new Phaser.Events.EventEmitter();
+    G = new Constants();
+    model = new Model();
+    game = new Phaser.Game(config);
+
+  }
+</script>
+
+</html>

@@ -1,0 +1,11 @@
+:root {
+    --main-bg-color: brown;
+    --dot-width: 20px;
+    --dot-height: 20px;
+    --box-width: 60px;
+    --box-height: 60px;
+}
+
+.w-fit { width: fit-content }
+.mx-auto { margin-right: auto; margin-left: auto }
+button{ background-color: var(--main-bg-color) }

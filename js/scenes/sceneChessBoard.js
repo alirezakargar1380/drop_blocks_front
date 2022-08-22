@@ -15,6 +15,9 @@ class SceneChessBoard extends Phaser.Scene {
     this.newStartPoint = {
       x: 1, y: 1
     }
+    this.center = {
+      x: 2, y: 2
+    }
     this.gameObjects = []
   }
 
@@ -34,6 +37,29 @@ class SceneChessBoard extends Phaser.Scene {
     // this.add.image(this.getX(2), this.getY(1), "b_b");
 
     setInterval(() => {
+      const currentRotationName = this.getCurrentShapeRotaion(this.shapes.L.rotations)
+      
+      // this.center.x = this.center.x
+      // this.center.y = this.center.y + 1
+
+      // update newStartPoint
+      // if (currentRotationName === "downLeft") {
+      //   this.newStartPoint.x = this.center.x - 1
+      //   this.newStartPoint.y = this.center.y + 1
+      // }
+      // if (currentRotationName === "topLeft") {
+      //   this.newStartPoint.x = this.center.x - 1
+      //   this.newStartPoint.y = this.center.y - 1
+      // }
+      // if (currentRotationName === "topRight") {
+      //   this.newStartPoint.x = this.center.x + 1
+      //   this.newStartPoint.y = this.center.y - 1
+      // }
+      // if (currentRotationName === "downRight") {
+      //   this.newStartPoint.x = this.center.x + 1
+      //   this.newStartPoint.y = this.center.y + 1
+      // }
+      
       let nextRotaionResult = this.getNextRotation(this.shapes.L.rotations)
       this.shapes.L.rotations = nextRotaionResult.newRotaionObject
       const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.newStartPoint, nextRotaionResult.nextRotaionName)
@@ -92,6 +118,7 @@ class SceneChessBoard extends Phaser.Scene {
 
           this.newStartPoint.x = shapePoint[0].x;
           this.newStartPoint.y = shapePoint[0].y;
+          this.getStartPointByCubeDirection
         }
 
         // check for direction want to go
@@ -237,6 +264,16 @@ class SceneChessBoard extends Phaser.Scene {
     }
   }
 
+  getCurrentShapeRotaion(shapeRotationObject) {
+    let rotationName
+    Object.keys(shapeRotationObject).forEach((keyItem) => {
+      if (shapeRotationObject[keyItem]) {
+        rotationName = keyItem
+      }
+    })
+    return rotationName
+  }
+
   getCubePoints(centerX, centerY) {
     let points = [];
 
@@ -286,7 +323,7 @@ class SceneChessBoard extends Phaser.Scene {
   }
 
   canGoHere(direction) {
-    const points = this.getCubePoints(2, 2)
+    const points = this.getCubePoints(this.center.x, this.center.y)
     let canGo = false;
     points.forEach(({ x, y }) => {
       if (x === direction.x && y === direction.y) {

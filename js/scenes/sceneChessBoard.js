@@ -5,10 +5,10 @@ class SceneChessBoard extends Phaser.Scene {
       "L": {
         name: "L",
         rotations: {
-          "topRight": true,
+          "topRight": false,
           "downRight": false,
           "downLeft": false,
-          "topLeft": false
+          "topLeft": true
         }
       }
     }
@@ -20,7 +20,7 @@ class SceneChessBoard extends Phaser.Scene {
 
   preload() {
     this.load.image("b_b", "images/b_b.png");
-   }
+  }
 
   create() {
     console.log(this.getCubePoints(2, 2))
@@ -33,10 +33,11 @@ class SceneChessBoard extends Phaser.Scene {
     this.add.image(this.getX(1), this.getY(1), "b_b");
     this.add.image(this.getX(2), this.getY(1), "b_b");
 
-    // console.log(shape_ponts);
-    this.getNextRotation(this.shapes.L.rotations)
-  }
+    console.log(this.shapes.L.rotations);
+    this.shapes.L.rotations = this.getNextRotation(this.shapes.L.rotations)
+    console.log(this.shapes.L.rotations);
 
+  }
 
   getShapePoints(shapeName, stepByRotation, lastStartPoint, r) {
     let newStartPoint
@@ -187,14 +188,37 @@ class SceneChessBoard extends Phaser.Scene {
 
   getNextRotation(shapeRotationObject) {
     let nextIs = false
+    let foundNext = false
     let shapeRotaitons = Object.keys(shapeRotationObject)
-    console.log(shapeRotaitons)
-    Object.keys(shapeRotationObject).forEach((keyItem) => {
+
+    Object.keys(shapeRotationObject).forEach((keyItem, index) => {
+      if (foundNext) return
+      if (nextIs) {
+        Object.keys(shapeRotationObject).forEach((key) => {
+          shapeRotationObject[key] = false
+        })
+        shapeRotationObject[keyItem] = true
+        foundNext = true
+      }
+
       if (shapeRotationObject[keyItem]) {
-        // if 
+        console.error("i was true")
         nextIs = true
       }
+
+      if (index === shapeRotaitons.length - 1 && nextIs) nextIs = false 
+
     })
+
+    if (!nextIs) {
+      console.error("fuck")
+      Object.keys(shapeRotationObject).forEach((key) => {
+        shapeRotationObject[key] = false
+      })
+      shapeRotationObject[shapeRotaitons[0]] = true;
+    }
+
+    return shapeRotationObject
   }
 
   getCubePoints(centerX, centerY) {

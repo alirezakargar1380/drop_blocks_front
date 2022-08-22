@@ -2,23 +2,41 @@ class SceneChessBoard extends Phaser.Scene {
   constructor() {
     super();
     this.shapes = {
-      "L": "L"
+      "L": {
+        name: "L",
+        rotations: {
+          "topRight": true,
+          "downRight": false,
+          "downLeft": false,
+          "topLeft": false
+        }
+      }
     }
     this.newStartPoint = {
       x: 1, y: 1
     }
+    this.gameObjects = []
   }
 
-  preload() { }
+  preload() {
+    this.load.image("b_b", "images/b_b.png");
+   }
 
   create() {
     console.log(this.getCubePoints(2, 2))
     // CURRETLY IN topLeft
-    this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "topRight")
+    const shape_ponts = this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "topRight")
     this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "downRight")
     this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "downLeft")
     this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "topLeft")
+
+    this.add.image(this.getX(1), this.getY(1), "b_b");
+    this.add.image(this.getX(2), this.getY(1), "b_b");
+
+    // console.log(shape_ponts);
+    this.getNextRotation(this.shapes.L.rotations)
   }
+
 
   getShapePoints(shapeName, stepByRotation, lastStartPoint, r) {
     let newStartPoint
@@ -163,6 +181,20 @@ class SceneChessBoard extends Phaser.Scene {
 
         break;
     }
+
+    return shapePoint
+  }
+
+  getNextRotation(shapeRotationObject) {
+    let nextIs = false
+    let shapeRotaitons = Object.keys(shapeRotationObject)
+    console.log(shapeRotaitons)
+    Object.keys(shapeRotationObject).forEach((keyItem) => {
+      if (shapeRotationObject[keyItem]) {
+        // if 
+        nextIs = true
+      }
+    })
   }
 
   getCubePoints(centerX, centerY) {
@@ -341,5 +373,16 @@ class SceneChessBoard extends Phaser.Scene {
     }
   }
 
+  getX(x) {
+    let defaultX = 100
+
+    return defaultX + (x * 38);
+  }
+
+  getY(y) {
+    let defaultY = 100
+
+    return defaultY + (y * 38);
+  }
 
 }

@@ -16,6 +16,8 @@ class SceneChessBoard extends Phaser.Scene {
     // CURRETLY IN topLeft
     this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "topRight")
     this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "downRight")
+    this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "downLeft")
+    this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "topLeft")
   }
 
   getShapePoints(shapeName, stepByRotation, lastStartPoint, r) {
@@ -84,22 +86,80 @@ class SceneChessBoard extends Phaser.Scene {
           }
 
           // top
-          result = this.straightLineTop(1, newStartPoint)
-          if (result.canGo) {
-            maxCupe -= 1
-            shapePoint.push({
-              x: newStartPoint.x,
-              y: newStartPoint.y - 1
-            });
-            newStartPoint = result.lastDirection;
-          }
+          maxCupe -= 1
+          shapePoint.push({
+            x: newStartPoint.x,
+            y: newStartPoint.y - 1
+          });
 
           this.newStartPoint.x = shapePoint[0].x;
           this.newStartPoint.y = shapePoint[0].y;
 
-          console.log(shapePoint);
+          // console.log(shapePoint);
         }
 
+        // check for direction want to go
+        if (this.canGoHere({
+          x: lastStartPoint.x - stepByRotation,
+          y: lastStartPoint.y
+        }) && r === "downLeft") {
+          newStartPoint = {
+            x: lastStartPoint.x - stepByRotation,
+            y: lastStartPoint.y
+          }
+
+          // top
+          result = this.straightLineTop(3, newStartPoint);
+          if (result.canGo) {
+            maxCupe -= 3;
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+            newStartPoint = result.lastDirection;
+          }
+
+          // right
+          maxCupe -= 1
+          shapePoint.push({
+            x: newStartPoint.x + 1,
+            y: newStartPoint.y
+          });
+
+          this.newStartPoint.x = shapePoint[0].x;
+          this.newStartPoint.y = shapePoint[0].y;
+
+        }
+
+        // check for direction want to go
+        if (this.canGoHere({
+          x: lastStartPoint.x,
+          y: lastStartPoint.y - stepByRotation
+        }) && r === "topLeft") {
+          newStartPoint = {
+            x: lastStartPoint.x,
+            y: lastStartPoint.y - stepByRotation
+          }
+
+          // right
+          result = this.straightLineRight(3, newStartPoint);
+          if (result.canGo) {
+            maxCupe -= 3;
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+            newStartPoint = result.lastDirection;
+          }
+
+          // down
+          maxCupe -= 1
+          shapePoint.push({
+            x: newStartPoint.x,
+            y: newStartPoint.y + 1
+          });
+
+          this.newStartPoint.x = shapePoint[0].x;
+          this.newStartPoint.y = shapePoint[0].y;
+        }
 
         break;
     }
@@ -206,7 +266,7 @@ class SceneChessBoard extends Phaser.Scene {
         x: newStartPoint.x - i,
         y: newStartPoint.y
       }
-
+      
       if (!this.canGoHere(newDirection)) {
         console.error("problem")
         canGo = false
@@ -236,6 +296,35 @@ class SceneChessBoard extends Phaser.Scene {
         y: newStartPoint.y - i
       }
 
+      if (!this.canGoHere(newDirection)) {
+        console.error("problem")
+        canGo = false
+        break;
+      }
+
+      directions.push(newDirection)
+    }
+
+    return {
+      canGo: canGo,
+      directions: directions,
+      lastDirection: newDirection
+    }
+  }
+
+  straightLineRight(lineNumYouWantToGo, newStartPoint) {
+    let canGo = true
+    let directions = []
+    let newDirection
+
+    for (let i = 0; i < lineNumYouWantToGo; i++) {
+      if (!canGo) continue;
+
+      newDirection = {
+        x: newStartPoint.x + i,
+        y: newStartPoint.y
+      }
+      console.log(newDirection)
       if (!this.canGoHere(newDirection)) {
         console.error("problem")
         canGo = false

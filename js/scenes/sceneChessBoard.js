@@ -274,10 +274,7 @@ class SceneChessBoard extends Phaser.Scene {
       case "T":
 
         // centerTop
-        newStartPoint = {
-          x: lastStartPoint.x - 1,
-          y: lastStartPoint.y - 1
-        }
+        newStartPoint = this.getCoorByDirection("topLeft", lastStartPoint.x, lastStartPoint.y)
         if (this.canGoHere(newStartPoint) && r === "centerTop") {
           console.log("center top")
           // right
@@ -290,10 +287,7 @@ class SceneChessBoard extends Phaser.Scene {
         }
 
         // centerRight
-        newStartPoint = {
-          x: lastStartPoint.x + 1,
-          y: lastStartPoint.y - 1
-        }
+        newStartPoint = this.getCoorByDirection("topRight", lastStartPoint.x, lastStartPoint.y)
         if (this.canGoHere(newStartPoint) && r === "centerRight") {
           console.log("center right")
           // down
@@ -306,10 +300,7 @@ class SceneChessBoard extends Phaser.Scene {
         }
 
         // centerDown
-        newStartPoint = {
-          x: lastStartPoint.x + 1,
-          y: lastStartPoint.y + 1
-        }
+        newStartPoint = this.getCoorByDirection("downRight", lastStartPoint.x, lastStartPoint.y)
         if (this.canGoHere(newStartPoint) && r === "centerDown") {
           console.log("center down")
           // down
@@ -322,10 +313,7 @@ class SceneChessBoard extends Phaser.Scene {
         }
 
         // centerLeft
-        newStartPoint = {
-          x: lastStartPoint.x - 1,
-          y: lastStartPoint.y + 1
-        }
+        newStartPoint = this.getCoorByDirection("downLeft", lastStartPoint.x, lastStartPoint.y)
         if (this.canGoHere(newStartPoint) && r === "centerLeft") {
           console.log("center left")
           // top
@@ -403,48 +391,77 @@ class SceneChessBoard extends Phaser.Scene {
     let points = [];
 
     // row 1
-    points.push({
-      x: centerX - 1,
-      y: centerY - 1
-    })
-    points.push({
-      x: centerX,
-      y: centerY - 1
-    })
-    points.push({
-      x: centerX + 1,
-      y: centerY - 1
-    })
+    points.push(this.getCoorByDirection("topLeft", centerX, centerY))
+    points.push(this.getCoorByDirection("top", centerX, centerY))
+    points.push(this.getCoorByDirection("topRight", centerX, centerY))
 
     // row 2
-    points.push({
-      x: centerX - 1,
-      y: centerY
-    })
-    points.push({
-      x: centerX,
-      y: centerY
-    })
-    points.push({
-      x: centerX + 1,
-      y: centerY
-    })
+    points.push(this.getCoorByDirection("left", centerX, centerY))
+    points.push(this.getCoorByDirection("center", centerX, centerY))
+    points.push(this.getCoorByDirection("right", centerX, centerY))
 
     // row 3
-    points.push({
-      x: centerX - 1,
-      y: centerY + 1
-    })
-    points.push({
-      x: centerX,
-      y: centerY + 1
-    })
-    points.push({
-      x: centerX + 1,
-      y: centerY + 1
-    })
+    points.push(this.getCoorByDirection("downLeft", centerX, centerY))
+    points.push(this.getCoorByDirection("down", centerX, centerY))
+    points.push(this.getCoorByDirection("downRight", centerX, centerY))
 
     return points;
+  }
+
+  getCoorByDirection(dir, x, y) {
+    let coor = {}
+
+    switch (dir) {
+      case "topLeft":
+        coor.x = x - 1
+        coor.y = y - 1
+        break;
+
+      case "top":
+        coor.x = x
+        coor.y = y - 1
+        break;
+
+      case "topRight":
+        coor.x = x + 1
+        coor.y = y - 1
+        break;
+
+      case "left":
+        coor.x = x - 1
+        coor.y = y
+        break;
+
+      case "center":
+        coor.x = x
+        coor.y = y
+        break;
+
+      case "right":
+        coor.x = x + 1
+        coor.y = y
+        break;
+
+      case "downLeft":
+        coor.x = x - 1
+        coor.y = y + 1
+        break;
+
+      case "down":
+        coor.x = x
+        coor.y = y + 1
+        break;
+
+      case "downRight":
+        coor.x = x + 1
+        coor.y = y + 1
+        break;
+
+      default:
+        break;
+    }
+
+    return coor
   }
 
   canGoHere(direction) {

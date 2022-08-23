@@ -46,7 +46,11 @@ class SceneChessBoard extends Phaser.Scene {
 
     // console.log(this.getCubePoints(2, 2))
     // CURRETLY IN topLeft
-    // this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "topRight")
+    const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.center, "topLeft")
+    newShapePoints.forEach(({x, y}) => {
+      const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
+      this.gameObjects.push(imag)
+    })
     // this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "downRight")
     // this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "downLeft")
     // this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "topLeft")
@@ -61,13 +65,14 @@ class SceneChessBoard extends Phaser.Scene {
     // const Tshape = this.getShapePoints(this.shapes.T.name, 3, this.center, "centerDown")
     // console.log(Tshape)
 
-    const Tshape = this.getShapePoints(this.shapes.T.name, 3, this.center, "centerLeft")
-    console.log(Tshape)
+    // const Tshape = this.getShapePoints(this.shapes.T.name, 3, this.center, "centerLeft")
+    // console.log(Tshape)
 
     // this.add.image(this.getX(1), this.getY(1), "b_b");
     // this.add.image(this.getX(2), this.getY(1), "b_b");
 
     setInterval(() => {
+      return
       this.center.x = this.center.x
       this.center.y = this.center.y //+ 1
 
@@ -138,19 +143,11 @@ class SceneChessBoard extends Phaser.Scene {
     let result
     switch (shapeName) {
       case "L":
-        // this.findDirection()
-
+        newStartPoint = this.getCoorByDirection(r, lastStartPoint.x, lastStartPoint.y)
+        
         // check for direction want to go
-        if (this.canGoHere({
-          x: lastStartPoint.x + stepByRotation,
-          y: lastStartPoint.y
-        }) && r === "topRight") {
-
-          newStartPoint = {
-            x: lastStartPoint.x + stepByRotation,
-            y: lastStartPoint.y
-          }
-
+        if (this.canGoHere(newStartPoint) && r === "topRight") {
+          console.log("topRight")
           // down
           result = this.straightLineDown(3, newStartPoint)
           if (result.canGo) {
@@ -174,16 +171,7 @@ class SceneChessBoard extends Phaser.Scene {
         }
 
         // check for direction want to go
-        if (this.canGoHere({
-          x: lastStartPoint.x,
-          y: lastStartPoint.y + stepByRotation
-        }) && r === "downRight") {
-
-          newStartPoint = {
-            x: lastStartPoint.x,
-            y: lastStartPoint.y + stepByRotation
-          }
-
+        if (this.canGoHere(newStartPoint) && r === "downRight") {
           // left
           result = this.straightLineLeft(3, newStartPoint)
           if (result.canGo) {
@@ -208,15 +196,7 @@ class SceneChessBoard extends Phaser.Scene {
         }
 
         // check for direction want to go
-        if (this.canGoHere({
-          x: lastStartPoint.x - stepByRotation,
-          y: lastStartPoint.y
-        }) && r === "downLeft") {
-          newStartPoint = {
-            x: lastStartPoint.x - stepByRotation,
-            y: lastStartPoint.y
-          }
-
+        if (this.canGoHere(newStartPoint) && r === "downLeft") {
           // top
           result = this.straightLineTop(3, newStartPoint);
           if (result.canGo) {
@@ -240,15 +220,7 @@ class SceneChessBoard extends Phaser.Scene {
         }
 
         // check for direction want to go
-        if (this.canGoHere({
-          x: lastStartPoint.x,
-          y: lastStartPoint.y - stepByRotation
-        }) && r === "topLeft") {
-          newStartPoint = {
-            x: lastStartPoint.x,
-            y: lastStartPoint.y - stepByRotation
-          }
-
+        if (this.canGoHere(newStartPoint) && r === "topLeft") {
           // right
           result = this.straightLineRight(3, newStartPoint);
           if (result.canGo) {

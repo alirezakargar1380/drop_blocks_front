@@ -9,7 +9,8 @@ class SceneChessBoard extends Phaser.Scene {
       "downLeft": "downLeft",
       "left": "left",
       "topLeft": "topLeft",
-      "top": "top"
+      "top": "top",
+      "center": "center"
     }
     this.shapes = {
       "L": {
@@ -37,6 +38,20 @@ class SceneChessBoard extends Phaser.Scene {
           "right": "right",
           "down": "down",
           "left": "left"
+        }
+      },
+      "ZL": {
+        name: "ZL",
+        rotations: {
+          left: true,
+          top: false
+        }
+      },
+      "ZR": {
+        name: "ZR",
+        rotations: {
+          right: true,
+          top: false
         }
       }
     }
@@ -68,11 +83,20 @@ class SceneChessBoard extends Phaser.Scene {
 
     // console.log(this.getCubePoints(2, 2))
     // CURRETLY IN topLeft
-    const newShapePoints = this.getShapePoints(this.shapes.LT.name, 3, this.center, this.direction.top)
+    // const newShapePoints = this.getShapePoints(this.shapes.LT.name, 3, this.center, this.direction.top)
+
+    let newShapePoints = this.getShapePoints(this.shapes.ZR.name, 3, this.center, this.direction.top)
     newShapePoints.forEach(({ x, y }) => {
       const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
       this.gameObjects.push(imag)
     })
+
+    // newShapePoints = this.getShapePoints(this.shapes.ZL.name, 3, this.center, this.direction.left)
+    // newShapePoints.forEach(({ x, y }) => {
+    //   const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
+    //   this.gameObjects.push(imag)
+    // })
+
     // this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "downRight")
     // this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "downLeft")
     // this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "topLeft")
@@ -340,7 +364,7 @@ class SceneChessBoard extends Phaser.Scene {
             })
           }
         }
-        
+
         // left
         newStartPoint = this.getCoorByDirection(this.direction.topLeft, lastStartPoint.x, lastStartPoint.y)
         if (this.canGoHere(newStartPoint) && r === this.direction.left) {
@@ -355,7 +379,57 @@ class SceneChessBoard extends Phaser.Scene {
           }
         }
 
-        
+
+        break;
+      case "ZL":
+        // left
+        if (r === this.direction.left) {
+          // left
+          shapePoint.push(this.getCoorByDirection(this.direction.left, lastStartPoint.x, lastStartPoint.y))
+          // center
+          shapePoint.push(this.getCoorByDirection(this.direction.center, lastStartPoint.x, lastStartPoint.y))
+          // down
+          shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
+          // downRight
+          shapePoint.push(this.getCoorByDirection(this.direction.downRight, lastStartPoint.x, lastStartPoint.y))
+        }
+
+        // top
+        if (r === this.direction.top) {
+          // topRight
+          shapePoint.push(this.getCoorByDirection(this.direction.topRight, lastStartPoint.x, lastStartPoint.y))
+          // right
+          shapePoint.push(this.getCoorByDirection(this.direction.right, lastStartPoint.x, lastStartPoint.y))
+          // center
+          shapePoint.push(this.getCoorByDirection(this.direction.center, lastStartPoint.x, lastStartPoint.y))
+          // down
+          shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
+        }
+        break;
+      case "ZR":
+        // right
+        if (r === this.direction.right) {
+          // right
+          shapePoint.push(this.getCoorByDirection(this.direction.right, lastStartPoint.x, lastStartPoint.y))
+          // center
+          shapePoint.push(this.getCoorByDirection(this.direction.center, lastStartPoint.x, lastStartPoint.y))
+          // down
+          shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
+          // downLeft
+          shapePoint.push(this.getCoorByDirection(this.direction.downLeft, lastStartPoint.x, lastStartPoint.y))
+        }
+
+        // top
+        if (r === this.direction.top) {
+          // topRight
+          shapePoint.push(this.getCoorByDirection(this.direction.topLeft, lastStartPoint.x, lastStartPoint.y))
+          // right
+          shapePoint.push(this.getCoorByDirection(this.direction.left, lastStartPoint.x, lastStartPoint.y))
+          // center
+          shapePoint.push(this.getCoorByDirection(this.direction.center, lastStartPoint.x, lastStartPoint.y))
+          // down
+          shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
+        }
         break;
       default:
         break;

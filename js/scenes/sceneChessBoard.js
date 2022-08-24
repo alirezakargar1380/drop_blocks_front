@@ -32,9 +32,13 @@ class SceneChessBoard extends Phaser.Scene {
 
   preload() {
     this.load.image("b_b", "images/b_b.png");
+    this.load.image("grid", "images/grid.png");
   }
 
   create() {
+    console.log(game.config.width / 2)
+    console.log(game.config.height / 2)
+    this.add.image(game.config.width / 2, game.config.height / 2, "grid");
 
     this.input.on('pointermove', function (pointer) {
       // console.log(pointer.x, pointer.y)
@@ -72,27 +76,27 @@ class SceneChessBoard extends Phaser.Scene {
     // this.add.image(this.getX(2), this.getY(1), "b_b");
 
     setInterval(() => {
-      return
-      this.center.x = this.center.x
-      this.center.y = this.center.y //+ 1
+      // return
+      // this.center.x = this.center.x
+      // this.center.y = this.center.y //+ 1
 
-      let nextRotaionResult = this.getNextRotation(this.shapes.T.rotations)
-      this.shapes.T.rotations = nextRotaionResult.newRotaionObject
+      // let nextRotaionResult = this.getNextRotation(this.shapes.T.rotations)
+      // this.shapes.T.rotations = nextRotaionResult.newRotaionObject
 
-      const newShapePoints = this.getShapePoints(this.shapes.T.name, 3, this.center, nextRotaionResult.nextRotaionName)
+      // const newShapePoints = this.getShapePoints(this.shapes.T.name, 3, this.center, nextRotaionResult.nextRotaionName)
 
-      this.gameObjects.forEach((gameObjects) => {
-        gameObjects.destroy();
-      })
+      // this.gameObjects.forEach((gameObjects) => {
+      //   gameObjects.destroy();
+      // })
 
-      newShapePoints.forEach(({x, y}) => {
+      // newShapePoints.forEach(({x, y}) => {
         
-        const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
-        this.gameObjects.push(imag)
-      })
+      //   const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
+      //   this.gameObjects.push(imag)
+      // })
 
-      return
-      const currentRotationName = this.getCurrentShapeRotaion(this.shapes.L.rotations)
+      // return
+      // const currentRotationName = this.getCurrentShapeRotaion(this.shapes.L.rotations)
       
       // this.center.x = this.center.x
       // this.center.y = this.center.y + 1
@@ -115,9 +119,9 @@ class SceneChessBoard extends Phaser.Scene {
       //   this.newStartPoint.y = this.center.y + 1
       // }
       
-      // let nextRotaionResult = this.getNextRotation(this.shapes.L.rotations)
-      // this.shapes.L.rotations = nextRotaionResult.newRotaionObject
-      // const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.newStartPoint, nextRotaionResult.nextRotaionName)
+      let nextRotaionResult = this.getNextRotation(this.shapes.L.rotations)
+      this.shapes.L.rotations = nextRotaionResult.newRotaionObject
+      const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.center, nextRotaionResult.nextRotaionName)
 
       this.gameObjects.forEach((gameObjects) => {
         gameObjects.destroy();
@@ -165,9 +169,6 @@ class SceneChessBoard extends Phaser.Scene {
             y: newStartPoint.y
           });
 
-          this.newStartPoint.x = shapePoint[0].x;
-          this.newStartPoint.y = shapePoint[0].y;
-          this.getStartPointByCubeDirection
         }
 
         // check for direction want to go
@@ -188,9 +189,6 @@ class SceneChessBoard extends Phaser.Scene {
             x: newStartPoint.x,
             y: newStartPoint.y - 1
           });
-
-          this.newStartPoint.x = shapePoint[0].x;
-          this.newStartPoint.y = shapePoint[0].y;
 
           // console.log(shapePoint);
         }
@@ -214,9 +212,6 @@ class SceneChessBoard extends Phaser.Scene {
             y: newStartPoint.y
           });
 
-          this.newStartPoint.x = shapePoint[0].x;
-          this.newStartPoint.y = shapePoint[0].y;
-
         }
 
         // check for direction want to go
@@ -237,9 +232,6 @@ class SceneChessBoard extends Phaser.Scene {
             x: newStartPoint.x,
             y: newStartPoint.y + 1
           });
-
-          this.newStartPoint.x = shapePoint[0].x;
-          this.newStartPoint.y = shapePoint[0].y;
         }
 
       break;
@@ -565,13 +557,13 @@ class SceneChessBoard extends Phaser.Scene {
   }
 
   getX(x) {
-    let defaultX = 100
+    let defaultX = 350 - ( 38 /2 )
 
     return defaultX + (x * 38);
   }
 
   getY(y) {
-    let defaultY = 100
+    let defaultY = 160 - ( 38 /2 )
 
     return defaultY + (y * 38);
   }

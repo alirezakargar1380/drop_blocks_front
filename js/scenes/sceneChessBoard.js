@@ -1,6 +1,16 @@
 class SceneChessBoard extends Phaser.Scene {
   constructor() {
     super();
+    this.direction = {
+      "topRight": "topRight",
+      "right": "right",
+      "downRight": "downRight",
+      "down": "down",
+      "downLeft": "downLeft",
+      "left": "left",
+      "topLeft": "topLeft",
+      "top": "top"
+    }
     this.shapes = {
       "L": {
         name: "L",
@@ -19,6 +29,15 @@ class SceneChessBoard extends Phaser.Scene {
           "centerDown": true,
           "centerLeft": false
         }
+      },
+      "LT": {
+        name: "LT",
+        rotations: {
+          "top": "top",
+          "right": "right",
+          "down": "down",
+          "left": "left"
+        }
       }
     }
     this.newStartPoint = {
@@ -36,8 +55,7 @@ class SceneChessBoard extends Phaser.Scene {
   }
 
   create() {
-    console.log(game.config.width / 2)
-    console.log(game.config.height / 2)
+    // grid
     this.add.image(game.config.width / 2, game.config.height / 2, "grid");
 
     this.input.on('pointermove', function (pointer) {
@@ -50,8 +68,8 @@ class SceneChessBoard extends Phaser.Scene {
 
     // console.log(this.getCubePoints(2, 2))
     // CURRETLY IN topLeft
-    const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.center, "topLeft")
-    newShapePoints.forEach(({x, y}) => {
+    const newShapePoints = this.getShapePoints(this.shapes.LT.name, 3, this.center, this.direction.top)
+    newShapePoints.forEach(({ x, y }) => {
       const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
       this.gameObjects.push(imag)
     })
@@ -76,9 +94,9 @@ class SceneChessBoard extends Phaser.Scene {
     // this.add.image(this.getX(2), this.getY(1), "b_b");
 
     setInterval(() => {
-      // return
-      // this.center.x = this.center.x
-      // this.center.y = this.center.y //+ 1
+      return
+      this.center.x = this.center.x
+      this.center.y = this.center.y + 1
 
       // let nextRotaionResult = this.getNextRotation(this.shapes.T.rotations)
       // this.shapes.T.rotations = nextRotaionResult.newRotaionObject
@@ -90,54 +108,39 @@ class SceneChessBoard extends Phaser.Scene {
       // })
 
       // newShapePoints.forEach(({x, y}) => {
-        
+
       //   const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
       //   this.gameObjects.push(imag)
       // })
 
       // return
       // const currentRotationName = this.getCurrentShapeRotaion(this.shapes.L.rotations)
-      
+
       // this.center.x = this.center.x
       // this.center.y = this.center.y + 1
 
-      // update newStartPoint
-      // if (currentRotationName === "downLeft") {
-      //   this.newStartPoint.x = this.center.x - 1
-      //   this.newStartPoint.y = this.center.y + 1
-      // }
-      // if (currentRotationName === "topLeft") {
-      //   this.newStartPoint.x = this.center.x - 1
-      //   this.newStartPoint.y = this.center.y - 1
-      // }
-      // if (currentRotationName === "topRight") {
-      //   this.newStartPoint.x = this.center.x + 1
-      //   this.newStartPoint.y = this.center.y - 1
-      // }
-      // if (currentRotationName === "downRight") {
-      //   this.newStartPoint.x = this.center.x + 1
-      //   this.newStartPoint.y = this.center.y + 1
-      // }
-      
-      let nextRotaionResult = this.getNextRotation(this.shapes.L.rotations)
-      this.shapes.L.rotations = nextRotaionResult.newRotaionObject
-      const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.center, nextRotaionResult.nextRotaionName)
+      // let nextRotaionResult = this.getNextRotation(this.shapes.L.rotations)
+      // this.shapes.L.rotations = nextRotaionResult.newRotaionObject
+      // const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.center, nextRotaionResult.nextRotaionName)
+
+      const currentRotationName = this.getCurrentShapeRotaion(this.shapes.L.rotations)
+      const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.center, currentRotationName)
 
       this.gameObjects.forEach((gameObjects) => {
         gameObjects.destroy();
       })
 
-      newShapePoints.forEach(({x, y}) => {
-        
+      newShapePoints.forEach(({ x, y }) => {
+
         const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
         this.gameObjects.push(imag)
       })
       // console.log("-----------------")
-    }, 1000)
+    }, 800)
 
   }
 
-  
+
 
   getShapePoints(shapeName, stepByRotation, lastStartPoint, r) {
     let newStartPoint
@@ -148,7 +151,7 @@ class SceneChessBoard extends Phaser.Scene {
     switch (shapeName) {
       case "L":
         newStartPoint = this.getCoorByDirection(r, lastStartPoint.x, lastStartPoint.y)
-        
+
         // check for direction want to go
         if (this.canGoHere(newStartPoint) && r === "topRight") {
           console.log("topRight")
@@ -234,7 +237,7 @@ class SceneChessBoard extends Phaser.Scene {
           });
         }
 
-      break;
+        break;
       case "T":
 
         // centerTop
@@ -293,6 +296,66 @@ class SceneChessBoard extends Phaser.Scene {
           x: this.center.x,
           y: this.center.y
         });
+        break;
+      case "LT":
+
+        // top
+        newStartPoint = this.getCoorByDirection(this.direction.topRight, lastStartPoint.x, lastStartPoint.y)
+        if (this.canGoHere(newStartPoint) && r === this.direction.top) {
+          // top
+          shapePoint.push(this.getCoorByDirection(this.direction.top, lastStartPoint.x, lastStartPoint.y))
+          // down
+          result = this.straightLineDown(3, newStartPoint);
+          if (result.canGo) {
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+          }
+        }
+
+        // right
+        newStartPoint = this.getCoorByDirection(this.direction.downRight, lastStartPoint.x, lastStartPoint.y)
+        if (this.canGoHere(newStartPoint) && r === this.direction.right) {
+          // right
+          shapePoint.push(this.getCoorByDirection(this.direction.right, lastStartPoint.x, lastStartPoint.y))
+          // left
+          result = this.straightLineLeft(3, newStartPoint);
+          if (result.canGo) {
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+          }
+        }
+
+        // down
+        newStartPoint = this.getCoorByDirection(this.direction.downLeft, lastStartPoint.x, lastStartPoint.y)
+        if (this.canGoHere(newStartPoint) && r === this.direction.down) {
+          // down
+          shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
+          // left
+          result = this.straightLineTop(3, newStartPoint);
+          if (result.canGo) {
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+          }
+        }
+        
+        // left
+        newStartPoint = this.getCoorByDirection(this.direction.topLeft, lastStartPoint.x, lastStartPoint.y)
+        if (this.canGoHere(newStartPoint) && r === this.direction.left) {
+          // down
+          shapePoint.push(this.getCoorByDirection(this.direction.left, lastStartPoint.x, lastStartPoint.y))
+          // left
+          result = this.straightLineRight(3, newStartPoint);
+          if (result.canGo) {
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+          }
+        }
+
+        
         break;
       default:
         break;
@@ -557,13 +620,13 @@ class SceneChessBoard extends Phaser.Scene {
   }
 
   getX(x) {
-    let defaultX = 350 - ( 38 /2 )
+    let defaultX = 350 - (38 / 2)
 
     return defaultX + (x * 38);
   }
 
   getY(y) {
-    let defaultY = 160 - ( 38 /2 )
+    let defaultY = 160 - (38 / 2)
 
     return defaultY + (y * 38);
   }

@@ -1,6 +1,12 @@
 class SceneChessBoard extends Phaser.Scene {
   constructor() {
     super();
+    this.clicked = false
+    this.shapeMoved = false
+    this.clickedPositions = {
+      x: 0,
+      y: 0
+    }
     this.direction = {
       "topRight": "topRight",
       "right": "right",
@@ -59,7 +65,7 @@ class SceneChessBoard extends Phaser.Scene {
       x: 1, y: 1
     }
     this.center = {
-      x: 2, y: 2
+      x: 5, y: 2
     }
     this.gameObjects = []
   }
@@ -74,12 +80,37 @@ class SceneChessBoard extends Phaser.Scene {
     this.add.image(game.config.width / 2, game.config.height / 2, "grid");
 
     this.input.on('pointermove', function (pointer) {
-      // console.log(pointer.x, pointer.y)
-    })
+      if (!this.clicked || this.shapeMoved) return
+      if (this.getDistance(this.clickedPositions, pointer) < 22) return
+        
+      let angle = this.get_angle(this.clickedPositions.x, this.clickedPositions.y, pointer.x, pointer.y)
+
+      if (angle >= 45 && angle <= 135) {
+        console.log("right")
+      }
+
+      if (angle > 225 && angle <= 315) {
+        console.log("left")
+      }
+
+      if (angle > 315 && angle <= 360 || angle >= 0 && angle < 45) {
+        console.log("down")
+      }
+      
+      this.shapeMoved = true
+    }, this)
 
     this.input.on('pointerdown', function (pointer) {
       // console.error(pointer.x, pointer.y)
-    })
+      this.clickedPositions.x = pointer.x
+      this.clickedPositions.y = pointer.y
+      this.clicked = true
+    }, this)
+
+    this.input.on('pointerup', function (pointer) {
+      this.clicked = false
+      this.shapeMoved = false
+    }, this)
 
     // console.log(this.getCubePoints(2, 2))
     // CURRETLY IN topLeft
@@ -703,6 +734,27 @@ class SceneChessBoard extends Phaser.Scene {
     let defaultY = 160 - (38 / 2)
 
     return defaultY + (y * 38);
+  }
+
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  getDistance(from, to) {
+    let x = to.y - from.y
+    let y = to.x - from.x
+
+    return Math.sqrt(x * x + y * y)
+  }
+
+  get_angle(x1, y1, x2, y2) {
+    let angle_final
+    let angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI + 180;
+    if (angle >= 270) {
+      angle_final = 360 - (parseInt(angle.toFixed(0)) - 270)
+    } else {
+      angle_final = Math.abs(angle.toFixed(0) - 270)
+    }
+
+    return angle_final
   }
 
 }

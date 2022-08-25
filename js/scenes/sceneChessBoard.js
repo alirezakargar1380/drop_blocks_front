@@ -65,7 +65,7 @@ class SceneChessBoard extends Phaser.Scene {
       x: 1, y: 1
     }
     this.center = {
-      x: 5, y: 2
+      x: 5, y: 1
     }
     this.gameObjects = []
   }
@@ -76,17 +76,33 @@ class SceneChessBoard extends Phaser.Scene {
   }
 
   create() {
+    socket.emit("message")
+
     // grid
     this.add.image(game.config.width / 2, game.config.height / 2, "grid");
 
     this.input.on('pointermove', function (pointer) {
       if (!this.clicked || this.shapeMoved) return
       if (this.getDistance(this.clickedPositions, pointer) < 22) return
-        
+
       let angle = this.get_angle(this.clickedPositions.x, this.clickedPositions.y, pointer.x, pointer.y)
 
       if (angle >= 45 && angle <= 135) {
         console.log("right")
+        this.center.x++
+
+        const currentRotationName = this.getCurrentShapeRotaion(this.shapes.L.rotations)
+        const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.center, currentRotationName)
+
+        this.gameObjects.forEach((gameObjects) => {
+          gameObjects.destroy();
+        })
+
+        newShapePoints.forEach(({ x, y }) => {
+          const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
+          this.gameObjects.push(imag)
+        })
+
       }
 
       if (angle > 225 && angle <= 315) {
@@ -94,9 +110,9 @@ class SceneChessBoard extends Phaser.Scene {
       }
 
       if (angle > 315 && angle <= 360 || angle >= 0 && angle < 45) {
-        console.log("down")
+        socket.emit("speed", "fast")
       }
-      
+
       this.shapeMoved = true
     }, this)
 
@@ -110,17 +126,18 @@ class SceneChessBoard extends Phaser.Scene {
     this.input.on('pointerup', function (pointer) {
       this.clicked = false
       this.shapeMoved = false
+      socket.emit("speed", "slow")
     }, this)
 
     // console.log(this.getCubePoints(2, 2))
     // CURRETLY IN topLeft
     // const newShapePoints = this.getShapePoints(this.shapes.LT.name, 3, this.center, this.direction.top)
 
-    let newShapePoints = this.getShapePoints(this.shapes.ZR.name, 3, this.center, this.direction.top)
-    newShapePoints.forEach(({ x, y }) => {
-      const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
-      this.gameObjects.push(imag)
-    })
+    // let newShapePoints = this.getShapePoints(this.shapes.ZR.name, 3, this.center, this.direction.top)
+    // newShapePoints.forEach(({ x, y }) => {
+    //   const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
+    //   this.gameObjects.push(imag)
+    // })
 
     // newShapePoints = this.getShapePoints(this.shapes.ZL.name, 3, this.center, this.direction.left)
     // newShapePoints.forEach(({ x, y }) => {
@@ -147,6 +164,23 @@ class SceneChessBoard extends Phaser.Scene {
 
     // this.add.image(this.getX(1), this.getY(1), "b_b");
     // this.add.image(this.getX(2), this.getY(1), "b_b");
+
+    socket.on("message", (coor) => {
+      console.log(coor)
+      this.center = coor
+      const currentRotationName = this.getCurrentShapeRotaion(this.shapes.L.rotations)
+      const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.center, currentRotationName)
+      console.log(newShapePoints)
+
+      this.gameObjects.forEach((gameObjects) => {
+        gameObjects.destroy();
+      })
+
+      newShapePoints.forEach(({ x, y }) => {
+        const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
+        this.gameObjects.push(imag)
+      })
+    }, this)
 
     setInterval(() => {
       return
@@ -186,7 +220,6 @@ class SceneChessBoard extends Phaser.Scene {
       })
 
       newShapePoints.forEach(({ x, y }) => {
-
         const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
         this.gameObjects.push(imag)
       })

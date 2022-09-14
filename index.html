@@ -141,16 +141,21 @@
   const my_name = "{{my_name}}"
   const opponent_name = "{{opponent_name}}"
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get('id');
+
   // ========================================================= TEST
-  const socket = io('http://localhost:3000', {
-    timeout: 60 * 1000,
-    reconnection: false,
-    forceNew: true,
-    query: {
-      authorization: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiZDNhNjAyODc0NjE2NDgzOGE2N2U2ZmE1NGY2NzllMmFiN2QwZDRhYzQ1OGEyOTIxYzYzZjY4NjY5YzZlZDBiMWU2Nzg5MWY0NzUxYzEyNWQiLCJpYXQiOjE2NDI0Mjg4OTAuNjEyMjgzOTQ1MDgzNjE4MTY0MDYyNSwibmJmIjoxNjQyNDI4ODkwLjYxMjI4Nzk5ODE5OTQ2Mjg5MDYyNSwiZXhwIjoxNjczOTY0ODkwLjYwOTM4OTA2NjY5NjE2Njk5MjE4NzUsInN1YiI6IjY5OTIiLCJzY29wZXMiOltdfQ.ipe5GiZvOMnNDbCf-kVrF6ZvyUcDGC6nZo45uqXhlNoC8IVrrKYnObf6v3UWi_0v0PoOkK7oELrV60aNyaJ5oentRGrwz42CRFvMugW9de1M2aU961d1GNuxKj-8BxminvIeCPeCIWyTC6r-JUGiSFns3VFIT6qZePwP6ZpQYcoWv_mMVvoVJLhwZDaaz1wDgqa23IxqDqv1SHSTJJIsNxrCNnGM1oeF8FELTgXWGLNSo_Xk68g3b3Ob-8vJYq_6ehPB5teFfde189HeYT9SRuzWBFUuE86M9VLHdzB2tN6BfQY4gzLbyInswweYYa7KuYpTNp7vOeGkRH0mFqj-fkGDk6mh9c3PSceHn1YAgoDdqo5eIgdPcMSHHdW0AAZcR5-B6UdY5SUPgT1pqZEm4HdNo9M2v3UGQy4VwxnQPN_3W9XaIhEeMnAcmVm2UySKSc0T5flW5arxyVcpc_snP8pAkBJAMkU1GHnxa3G-DrzQBIN6RB2Q4gqgO8Hd0st56oAoSVlrSCOi_roQcfeVuIjjynOuzhhCAM0v1segL9NqC8Qxj7k_MSl-UeW1aBX4T2iW44UtSlOLtLMpTCnXJTy-E3_u7aZ5CUCTosKaJwFAM4HdyqH7RfxWY_Vqe2A8Pr3fx3pN-oxcQpyOjbevj-m-KqqcxdgjXomk0BWIUwQ"
-    }
-  });
-  socket.connect();
+  // const socket = io('http://localhost:3000', {
+  //   timeout: 10 * 1000,
+  //   reconnection: true,
+  //   forceNew: true,
+  //   query: {
+  //     authorization: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiZDNhNjAyODc0NjE2NDgzOGE2N2U2ZmE1NGY2NzllMmFiN2QwZDRhYzQ1OGEyOTIxYzYzZjY4NjY5YzZlZDBiMWU2Nzg5MWY0NzUxYzEyNWQiLCJpYXQiOjE2NDI0Mjg4OTAuNjEyMjgzOTQ1MDgzNjE4MTY0MDYyNSwibmJmIjoxNjQyNDI4ODkwLjYxMjI4Nzk5ODE5OTQ2Mjg5MDYyNSwiZXhwIjoxNjczOTY0ODkwLjYwOTM4OTA2NjY5NjE2Njk5MjE4NzUsInN1YiI6IjY5OTIiLCJzY29wZXMiOltdfQ.ipe5GiZvOMnNDbCf-kVrF6ZvyUcDGC6nZo45uqXhlNoC8IVrrKYnObf6v3UWi_0v0PoOkK7oELrV60aNyaJ5oentRGrwz42CRFvMugW9de1M2aU961d1GNuxKj-8BxminvIeCPeCIWyTC6r-JUGiSFns3VFIT6qZePwP6ZpQYcoWv_mMVvoVJLhwZDaaz1wDgqa23IxqDqv1SHSTJJIsNxrCNnGM1oeF8FELTgXWGLNSo_Xk68g3b3Ob-8vJYq_6ehPB5teFfde189HeYT9SRuzWBFUuE86M9VLHdzB2tN6BfQY4gzLbyInswweYYa7KuYpTNp7vOeGkRH0mFqj-fkGDk6mh9c3PSceHn1YAgoDdqo5eIgdPcMSHHdW0AAZcR5-B6UdY5SUPgT1pqZEm4HdNo9M2v3UGQy4VwxnQPN_3W9XaIhEeMnAcmVm2UySKSc0T5flW5arxyVcpc_snP8pAkBJAMkU1GHnxa3G-DrzQBIN6RB2Q4gqgO8Hd0st56oAoSVlrSCOi_roQcfeVuIjjynOuzhhCAM0v1segL9NqC8Qxj7k_MSl-UeW1aBX4T2iW44UtSlOLtLMpTCnXJTy-E3_u7aZ5CUCTosKaJwFAM4HdyqH7RfxWY_Vqe2A8Pr3fx3pN-oxcQpyOjbevj-m-KqqcxdgjXomk0BWIUwQ"
+  //   }
+  // });
+  // socket.connect();
+  // socket.emit("create-battle", id)
+  // socket.on("fuck", () => { console.log("fuck") })
   // ========================================================= TEST
 
   window.onload = function () {

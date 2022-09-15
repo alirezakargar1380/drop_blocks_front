@@ -93,6 +93,11 @@ class SceneChessBoard extends Phaser.Scene {
   create() {
     // socket.emit("message")
 
+    // =============================================================================== DRAW SHAPE
+    this.nextShapeName = this.selectRandomShapeName()
+    let selectedShapee = this.shapes["T"]
+    this.sh = new Shape(selectedShapee.name, selectedShapee.rotations)
+
     // grid
     this.add.image(game.config.width / 2, game.config.height / 2, "grid");
 
@@ -103,31 +108,18 @@ class SceneChessBoard extends Phaser.Scene {
       let angle = this.get_angle(this.clickedPositions.x, this.clickedPositions.y, pointer.x, pointer.y)
 
       if (angle >= 45 && angle <= 135) {
-        console.log("right")
+        this.sh.right()
+        this.removeAndDraw()
         // socket.emit("right")
-
-        // this.center.x++
-
-        // const currentRotationName = this.getCurrentShapeRotaion(this.shapes.L.rotations)
-        // const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.center, currentRotationName)
-
-        // this.gameObjects.forEach((gameObjects) => {
-        //   gameObjects.destroy();
-        // })
-
-        // newShapePoints.forEach(({ x, y }) => {
-        //   const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
-        //   this.gameObjects.push(imag)
-        // })
-
       }
 
       if (angle > 225 && angle <= 315) {
-        console.log("left")
+        this.sh.left()
+        this.removeAndDraw()
       }
 
       if (angle > 315 && angle <= 360 || angle >= 0 && angle < 45) {
-        socket.emit("speed", "fast")
+        // socket.emit("speed", "fast")
       }
 
       this.shapeMoved = true
@@ -143,18 +135,18 @@ class SceneChessBoard extends Phaser.Scene {
     this.input.on('pointerup', function (pointer) {
       this.clicked = false
       this.shapeMoved = false
-      socket.emit("speed", "slow")
+      // socket.emit("speed", "slow")
     }, this)
 
     // console.log(this.getCubePoints(2, 2))
     // CURRETLY IN topLeft
     // const newShapePoints = this.getShapePoints(this.shapes.LT.name, 3, this.center, this.direction.top)
 
-    let newShapePoints = this.getShapePoints(this.shapes.cube.name, 3, this.center, this.direction.center)
-    newShapePoints.forEach(({ x, y }) => {
-      const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
-      this.gameObjects.push(imag)
-    })
+    // let newShapePoints = this.getShapePoints(this.shapes.cube.name, 3, this.center, this.direction.center)
+    // newShapePoints.forEach(({ x, y }) => {
+    //   const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
+    //   this.gameObjects.push(imag)
+    // })
 
     // newShapePoints = this.getShapePoints(this.shapes.ZL.name, 3, this.center, this.direction.left)
     // newShapePoints.forEach(({ x, y }) => {
@@ -214,42 +206,32 @@ class SceneChessBoard extends Phaser.Scene {
     //   })
     // }, this)
 
-    return
+
+    let check = false
     // should select next shape name and rotation
-    let selectedShape = this.shapes["L"]
-    let a = new Shape(selectedShape.name, selectedShape.rotations)
-    console.log()
-
     setInterval(() => {
-      if (!a.drop()) {
-        a.getShape().forEach(({ x, y }) => {
-          this.blocks[x + "," + y] = "b_b"
-        })
-        console.log(this.blocks)
-
+      // if (check) return
+      if (!this.sh.drop()) {
 
         this.gameObjects.forEach((gameObjects) => {
           gameObjects.destroy();
         })
 
-        Object.keys(this.blocks).forEach((key) => {
-          const coor = key.split(",")
-          let x = coor[0]
-          let y = coor[1]
-          const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
-          this.gameObjects.push(imag)
+        this.sh.getShape().forEach(({ x, y }) => {
+          console.log(x, y)
+          const img = this.add.image(this.getX(x), this.getY(y), "b_b");
+          this.blocks[x + "," + y] = img
         })
-        return console.error("")
+
+        console.log(this.blocks)
+        console.error("")
+        check = true
+
+        this.nextShape()
+        return
       }
 
-      this.gameObjects.forEach((gameObjects) => {
-        gameObjects.destroy();
-      })
-
-      a.getShape().forEach(({ x, y }) => {
-        const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
-        this.gameObjects.push(imag)
-      })
+      this.removeAndDraw()
 
       return
       this.center.x = this.center.x
@@ -302,6 +284,29 @@ class SceneChessBoard extends Phaser.Scene {
     // let selectedShape = this.shapes["L"]
     // console.log(selectedShape)
 
+
+  }
+
+  nextShape() {
+    
+    this.nextShapeName = "cube" // test
+    let selectedShapee = this.shapes[this.nextShapeName]
+    this.sh = new Shape(selectedShapee.name, selectedShapee.rotations)
+    // this.nextShapeName = this.selectRandomShapeName()
+  }
+
+  removeAndDraw() {
+    this.gameObjects.forEach((gameObjects) => {
+      gameObjects.destroy();
+    })
+
+    this.sh.getShape().forEach(({ x, y }) => {
+      const img = this.add.image(this.getX(x), this.getY(y), "b_b");
+      this.gameObjects.push(img)
+    })
+  }
+
+  stickCubes() {
 
   }
 
@@ -599,7 +604,7 @@ class SceneChessBoard extends Phaser.Scene {
         shapePoint.push(this.getCoorByDirection(this.direction.center, lastStartPoint.x, lastStartPoint.y))
         shapePoint.push(this.getCoorByDirection(this.direction.right, lastStartPoint.x, lastStartPoint.y))
         shapePoint.push(this.getCoorByDirection(this.direction.topRight, lastStartPoint.x, lastStartPoint.y))
-        break
+        break;
       default:
         break;
     }
@@ -734,17 +739,17 @@ class SceneChessBoard extends Phaser.Scene {
     return coor
   }
 
-  canGoHere(direction) {
-    const points = this.getCubePoints(this.center.x, this.center.y)
-    let canGo = false;
-    points.forEach(({ x, y }) => {
-      if (x === direction.x && y === direction.y) {
-        canGo = true
-      }
-    })
+  // canGoHere(direction) {
+  //   const points = this.getCubePoints(this.center.x, this.center.y)
+  //   let canGo = false;
+  //   points.forEach(({ x, y }) => {
+  //     if (x === direction.x && y === direction.y) {
+  //       canGo = true
+  //     }
+  //   })
 
-    return canGo
-  }
+  //   return canGo
+  // }
 
   straightLineDown(lineNumYouWantToGo, newStartPoint) {
     let canGo = true
@@ -1121,7 +1126,11 @@ class getShapeCoordinate extends getWorldCoordinate {
       left: "left",
       topLeft: "topLeft",
       top: "top",
-      center: "center"
+      center: "center",
+      centerTop: "centerTop",
+      centerRight: "centerRight",
+      centerDown: "centerDown",
+      centerLeft: "centerLeft"
     }
   }
 
@@ -1227,151 +1236,159 @@ class getShapeCoordinate extends getWorldCoordinate {
         }
 
         break;
-        // case "T":
+      case "cube":
+        shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.top, this.center.x, this.center.y))
+        shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.center, this.center.x, this.center.y))
+        shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.right, this.center.x, this.center.y))
+        shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.topRight, this.center.x, this.center.y))
+        break;
+      case "T":
+        // centerTop
+        newStartPoint = this.getCoorByDirection("topLeft", this.center.x, this.center.y)
+        // console.log(newStartPoint)
+        // console.log(this.canGoToThisCoordinate(newStartPoint))
+        if (this.canGoHere(newStartPoint) && r === this.allShapeDirectionsName.centerTop) {
+          console.log("center top")
+          // right
+          result = this.straightLineRight(stepByRotation, newStartPoint)
 
-        //   // centerTop
-        //   newStartPoint = this.getCoorByDirection("topLeft", lastStartPoint.x, lastStartPoint.y)
-        //   if (this.canGoHere(newStartPoint) && r === this.allShapeDirectionsName.centerTop) {
-        //     console.log("center top")
-        //     // right
-        //     result = this.straightLineRight(stepByRotation, newStartPoint)
-        //     if (result.canGo) {
-        //       result.directions.forEach((dir) => {
-        //         shapePoint.push(dir);
-        //       })
-        //     }
-        //   }
+          if (result.canGo) {
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+          }
 
-        //   // centerRight
-        //   newStartPoint = this.getCoorByDirection("topRight", lastStartPoint.x, lastStartPoint.y)
-        //   if (this.canGoHere(newStartPoint) && r === "centerRight") {
-        //     console.log("center right")
-        //     // down
-        //     result = this.straightLineDown(stepByRotation, newStartPoint)
-        //     if (result.canGo) {
-        //       result.directions.forEach((dir) => {
-        //         shapePoint.push(dir);
-        //       })
-        //     }
-        //   }
+        }
 
-        //   // centerDown
-        //   newStartPoint = this.getCoorByDirection("downRight", lastStartPoint.x, lastStartPoint.y)
-        //   if (this.canGoHere(newStartPoint) && r === "centerDown") {
-        //     console.log("center down")
-        //     // down
-        //     result = this.straightLineLeft(stepByRotation, newStartPoint)
-        //     if (result.canGo) {
-        //       result.directions.forEach((dir) => {
-        //         shapePoint.push(dir);
-        //       })
-        //     }
-        //   }
+        // centerRight
+        newStartPoint = this.getCoorByDirection("topRight", this.center.x, this.center.y)
+        if (this.canGoHere(newStartPoint) && r === "centerRight") {
+          console.log("center right")
+          // down
+          result = this.straightLineDown(stepByRotation, newStartPoint)
+          if (result.canGo) {
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+          }
+        }
 
-        //   // centerLeft
-        //   newStartPoint = this.getCoorByDirection("downLeft", lastStartPoint.x, lastStartPoint.y)
-        //   if (this.canGoHere(newStartPoint) && r === "centerLeft") {
-        //     console.log("center left")
-        //     // top
-        //     result = this.straightLineTop(stepByRotation, newStartPoint)
-        //     if (result.canGo) {
-        //       result.directions.forEach((dir) => {
-        //         shapePoint.push(dir);
-        //       })
-        //     }
-        //   }
+        // centerDown
+        newStartPoint = this.getCoorByDirection("downRight", this.center.x, this.center.y)
+        if (this.canGoHere(newStartPoint) && r === "centerDown") {
+          console.log("center down")
+          // down
+          result = this.straightLineLeft(stepByRotation, newStartPoint)
+          if (result.canGo) {
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+          }
+        }
 
-        //   shapePoint.push({
-        //     x: this.center.x,
-        //     y: this.center.y
-        //   });
-        //   break;
-        // case "LT":
+        // centerLeft
+        newStartPoint = this.getCoorByDirection("downLeft", this.center.x, this.center.y)
+        if (this.canGoHere(newStartPoint) && r === "centerLeft") {
+          console.log("center left")
+          // top
+          result = this.straightLineTop(stepByRotation, newStartPoint)
+          if (result.canGo) {
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+          }
+        }
 
-        //   // top
-        //   newStartPoint = this.getCoorByDirection(this.direction.topRight, lastStartPoint.x, lastStartPoint.y)
-        //   if (this.canGoHere(newStartPoint) && r === this.direction.top) {
-        //     // top
-        //     shapePoint.push(this.getCoorByDirection(this.direction.top, lastStartPoint.x, lastStartPoint.y))
-        //     // down
-        //     result = this.straightLineDown(3, newStartPoint);
-        //     if (result.canGo) {
-        //       result.directions.forEach((dir) => {
-        //         shapePoint.push(dir);
-        //       })
-        //     }
-        //   }
+        shapePoint.push({
+          x: this.center.x,
+          y: this.center.y
+        });
+        break;
+      case "LT":
+        // top
+        newStartPoint = this.getCoorByDirection(this.direction.topRight, lastStartPoint.x, lastStartPoint.y)
+        if (this.canGoHere(newStartPoint) && r === this.direction.top) {
+          // top
+          shapePoint.push(this.getCoorByDirection(this.direction.top, lastStartPoint.x, lastStartPoint.y))
+          // down
+          result = this.straightLineDown(3, newStartPoint);
+          if (result.canGo) {
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+          }
+        }
 
-        //   // right
-        //   newStartPoint = this.getCoorByDirection(this.direction.downRight, lastStartPoint.x, lastStartPoint.y)
-        //   if (this.canGoHere(newStartPoint) && r === this.direction.right) {
-        //     // right
-        //     shapePoint.push(this.getCoorByDirection(this.direction.right, lastStartPoint.x, lastStartPoint.y))
-        //     // left
-        //     result = this.straightLineLeft(3, newStartPoint);
-        //     if (result.canGo) {
-        //       result.directions.forEach((dir) => {
-        //         shapePoint.push(dir);
-        //       })
-        //     }
-        //   }
+        // right
+        newStartPoint = this.getCoorByDirection(this.direction.downRight, lastStartPoint.x, lastStartPoint.y)
+        if (this.canGoHere(newStartPoint) && r === this.direction.right) {
+          // right
+          shapePoint.push(this.getCoorByDirection(this.direction.right, lastStartPoint.x, lastStartPoint.y))
+          // left
+          result = this.straightLineLeft(3, newStartPoint);
+          if (result.canGo) {
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+          }
+        }
 
-        //   // down
-        //   newStartPoint = this.getCoorByDirection(this.direction.downLeft, lastStartPoint.x, lastStartPoint.y)
-        //   if (this.canGoHere(newStartPoint) && r === this.direction.down) {
-        //     // down
-        //     shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
-        //     // left
-        //     result = this.straightLineTop(3, newStartPoint);
-        //     if (result.canGo) {
-        //       result.directions.forEach((dir) => {
-        //         shapePoint.push(dir);
-        //       })
-        //     }
-        //   }
+        // down
+        newStartPoint = this.getCoorByDirection(this.direction.downLeft, lastStartPoint.x, lastStartPoint.y)
+        if (this.canGoHere(newStartPoint) && r === this.direction.down) {
+          // down
+          shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
+          // left
+          result = this.straightLineTop(3, newStartPoint);
+          if (result.canGo) {
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+          }
+        }
 
-        //   // left
-        //   newStartPoint = this.getCoorByDirection(this.direction.topLeft, lastStartPoint.x, lastStartPoint.y)
-        //   if (this.canGoHere(newStartPoint) && r === this.direction.left) {
-        //     // down
-        //     shapePoint.push(this.getCoorByDirection(this.direction.left, lastStartPoint.x, lastStartPoint.y))
-        //     // left
-        //     result = this.straightLineRight(3, newStartPoint);
-        //     if (result.canGo) {
-        //       result.directions.forEach((dir) => {
-        //         shapePoint.push(dir);
-        //       })
-        //     }
-        //   }
+        // left
+        newStartPoint = this.getCoorByDirection(this.direction.topLeft, lastStartPoint.x, lastStartPoint.y)
+        if (this.canGoHere(newStartPoint) && r === this.direction.left) {
+          // down
+          shapePoint.push(this.getCoorByDirection(this.direction.left, lastStartPoint.x, lastStartPoint.y))
+          // left
+          result = this.straightLineRight(3, newStartPoint);
+          if (result.canGo) {
+            result.directions.forEach((dir) => {
+              shapePoint.push(dir);
+            })
+          }
+        }
 
 
-        //   break;
-        // case "ZL":
-        //   // left
-        //   if (r === this.direction.left) {
-        //     // left
-        //     shapePoint.push(this.getCoorByDirection(this.direction.left, lastStartPoint.x, lastStartPoint.y))
-        //     // center
-        //     shapePoint.push(this.getCoorByDirection(this.direction.center, lastStartPoint.x, lastStartPoint.y))
-        //     // down
-        //     shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
-        //     // downRight
-        //     shapePoint.push(this.getCoorByDirection(this.direction.downRight, lastStartPoint.x, lastStartPoint.y))
-        //   }
+        break;
+      case "ZL":
+        // left
+        if (r === this.direction.left) {
+          // left
+          shapePoint.push(this.getCoorByDirection(this.direction.left, lastStartPoint.x, lastStartPoint.y))
+          // center
+          shapePoint.push(this.getCoorByDirection(this.direction.center, lastStartPoint.x, lastStartPoint.y))
+          // down
+          shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
+          // downRight
+          shapePoint.push(this.getCoorByDirection(this.direction.downRight, lastStartPoint.x, lastStartPoint.y))
+        }
 
-        //   // top
-        //   if (r === this.direction.top) {
-        //     // topRight
-        //     shapePoint.push(this.getCoorByDirection(this.direction.topRight, lastStartPoint.x, lastStartPoint.y))
-        //     // right
-        //     shapePoint.push(this.getCoorByDirection(this.direction.right, lastStartPoint.x, lastStartPoint.y))
-        //     // center
-        //     shapePoint.push(this.getCoorByDirection(this.direction.center, lastStartPoint.x, lastStartPoint.y))
-        //     // down
-        //     shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
-        //   }
-        //   break;
-        // case "ZR":
+        // top
+        if (r === this.direction.top) {
+          // topRight
+          shapePoint.push(this.getCoorByDirection(this.direction.topRight, lastStartPoint.x, lastStartPoint.y))
+          // right
+          shapePoint.push(this.getCoorByDirection(this.direction.right, lastStartPoint.x, lastStartPoint.y))
+          // center
+          shapePoint.push(this.getCoorByDirection(this.direction.center, lastStartPoint.x, lastStartPoint.y))
+          // down
+          shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
+        }
+        break;
+      case "ZR":
         // right
         if (r === this.direction.right) {
           // right
@@ -1410,22 +1427,60 @@ class Shape extends getShapeCoordinate {
     super(name)
     this.shapeName = name
     this.shapeRotaionsNames = rotations
+    this.shapePoints = []
     this.setCenterPoint(5, 1)
     // console.log(">>>>>>>>>>>>>", this.center, "<<<<<<<<<<<<<<<<<<<")
   }
 
   getShape() {
     console.log(this.center.y)
-    return this.getShapePoints(this.shapeName, 3, this.allShapeDirectionsName.topRight)
+    this.shapePoints = this.getShapePoints(this.shapeName, 3, this.allShapeDirectionsName.centerTop)
+    return this.shapePoints
   }
 
   drop() {
+    this.center.y++
+
+    const checkResult = this.canDrop()
+    if (!checkResult) this.center.y--
+    return checkResult
+
     if (this.center.y >= 19) {
       return false
     }
 
     this.center.y++
     return true
+  }
+
+  right() {
+    if (this.center.x >= 9) {
+      return false
+    }
+
+    this.center.x++
+    return true
+  }
+
+  left() {
+    if (this.center.x <= 2) {
+      return false
+    }
+
+    this.center.x--
+    return true
+  }
+
+  canDrop() {
+    let canGo = true
+
+    this.shapePoints.forEach(({ x, y }) => {
+      if (y >= 20) {
+        canGo = false
+      }
+    })
+
+    return canGo
   }
 
 }

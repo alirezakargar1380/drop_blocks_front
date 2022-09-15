@@ -63,8 +63,8 @@ class SceneChessBoard extends Phaser.Scene {
       "I": {
         name: "I",
         rotations: {
-          down: true,
-          top: false
+          down: false,
+          top: true
         }
       },
       "cube": {
@@ -95,8 +95,8 @@ class SceneChessBoard extends Phaser.Scene {
 
     // =============================================================================== DRAW SHAPE
     this.nextShapeName = this.selectRandomShapeName()
-    let selectedShapee = this.shapes["T"]
-    this.sh = new Shape(selectedShapee.name, selectedShapee.rotations)
+    let selectedShapee = this.shapes["cube"]
+    this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 1, y: 2 })
 
     // grid
     this.add.image(game.config.width / 2, game.config.height / 2, "grid");
@@ -206,27 +206,24 @@ class SceneChessBoard extends Phaser.Scene {
     //   })
     // }, this)
 
-
-    let check = false
+    this.counter = 0
     // should select next shape name and rotation
     setInterval(() => {
-      // if (check) return
-      if (!this.sh.drop()) {
+      if (this.counter > 2) return
+      if (!this.sh.drop(Object.keys(this.blocks))) {
 
         this.gameObjects.forEach((gameObjects) => {
           gameObjects.destroy();
         })
 
-        this.sh.getShape().forEach(({ x, y }) => {
-          console.log(x, y)
+        this.sh.getShape(true).forEach(({ x, y }) => {
           const img = this.add.image(this.getX(x), this.getY(y), "b_b");
           this.blocks[x + "," + y] = img
         })
 
-        console.log(this.blocks)
-        console.error("")
-        check = true
-
+        // console.log(this.blocks)
+        console.error("FINISH")
+        this.counter++
         this.nextShape()
         return
       }
@@ -288,19 +285,39 @@ class SceneChessBoard extends Phaser.Scene {
   }
 
   nextShape() {
-    
-    this.nextShapeName = "cube" // test
-    let selectedShapee = this.shapes[this.nextShapeName]
-    this.sh = new Shape(selectedShapee.name, selectedShapee.rotations)
+    let selectedShapee
+
+    switch (this.counter) {
+      case 1:
+        console.error("im fuckin")
+        this.nextShapeName = "I" // test
+        selectedShapee = this.shapes[this.nextShapeName]
+        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, {x: 4, y: 1})
+        break;
+      case 2:
+        console.error("im fuckin")
+        this.nextShapeName = "I" // test
+        selectedShapee = this.shapes[this.nextShapeName]
+        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, {x: 8, y: 1})
+        break;
+      default:
+        break;
+    }
+
+    this.nextShapeName = "T" // test
+    // let selectedShapee = this.shapes[this.nextShapeName]
+    // this.sh = new Shape(selectedShapee.name, selectedShapee.rotations)
     // this.nextShapeName = this.selectRandomShapeName()
   }
 
   removeAndDraw() {
+    console.log(this.sh.getShape())
     this.gameObjects.forEach((gameObjects) => {
       gameObjects.destroy();
     })
 
     this.sh.getShape().forEach(({ x, y }) => {
+      console.log(x, y)
       const img = this.add.image(this.getX(x), this.getY(y), "b_b");
       this.gameObjects.push(img)
     })
@@ -1248,7 +1265,6 @@ class getShapeCoordinate extends getWorldCoordinate {
         // console.log(newStartPoint)
         // console.log(this.canGoToThisCoordinate(newStartPoint))
         if (this.canGoHere(newStartPoint) && r === this.allShapeDirectionsName.centerTop) {
-          console.log("center top")
           // right
           result = this.straightLineRight(stepByRotation, newStartPoint)
 
@@ -1413,6 +1429,21 @@ class getShapeCoordinate extends getWorldCoordinate {
           shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
         }
         break;
+      case "I":
+        console.log(r)
+        if (r === this.allShapeDirectionsName.top) {
+          shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.topLeft, this.center.x, this.center.y))
+          shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.top, this.center.x, this.center.y))
+          shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.topRight, this.center.x, this.center.y))
+          shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.right, this.center.x + 1, this.center.y - 1))
+        }
+        if (r === this.allShapeDirectionsName.down) {
+          shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.top, this.center.x, this.center.y))
+          shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.center, this.center.x, this.center.y))
+          shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.down, this.center.x, this.center.y))
+          shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.down, this.center.x, this.center.y + 1))
+        }
+        break;
       default:
         break;
     }
@@ -1423,26 +1454,30 @@ class getShapeCoordinate extends getWorldCoordinate {
 
 class Shape extends getShapeCoordinate {
   // class Shape {
-  constructor(name, rotations) {
+  constructor(name, rotations, startCoor) {
     super(name)
     this.shapeName = name
-    this.shapeRotaionsNames = rotations
+    this.shapeRotaions = rotations
     this.shapePoints = []
-    this.setCenterPoint(5, 1)
+    this.selectedRotation = this.getCurrentShapeRotaion()
+    this.setCenterPoint(startCoor.x, startCoor.y)
     // console.log(">>>>>>>>>>>>>", this.center, "<<<<<<<<<<<<<<<<<<<")
   }
 
-  getShape() {
-    console.log(this.center.y)
-    this.shapePoints = this.getShapePoints(this.shapeName, 3, this.allShapeDirectionsName.centerTop)
-    return this.shapePoints
-  }
-
-  drop() {
+  drop(blocks) {
     this.center.y++
+    let checkResult = true
 
-    const checkResult = this.canDrop()
-    if (!checkResult) this.center.y--
+    checkResult = this.checkOtherBlocks(blocks)
+    // this.checkOtherBlocks(blocks)
+
+    if (checkResult) {
+      checkResult = this.canDrop()
+      if (!checkResult) this.center.y--
+    } else {
+      console.error("reson is check other blocks")
+    }
+
     return checkResult
 
     if (this.center.y >= 19) {
@@ -1451,6 +1486,27 @@ class Shape extends getShapeCoordinate {
 
     this.center.y++
     return true
+  }
+
+  checkOtherBlocks(blocks) {
+    let checkResult = true
+    blocks.forEach((key) => {
+      const coordinate = key.split(",")
+      const xx = parseInt(coordinate[0])
+      const yy = parseInt(coordinate[1])
+      this.getShape().forEach(({ x, y }) => {
+        if (xx == x && yy == y) {
+          checkResult = false
+        }
+      })
+    })
+    if (!checkResult) this.center.y--
+    return checkResult
+  }
+
+  getShape() {
+    this.shapePoints = this.getShapePoints(this.shapeName, 3, this.selectedRotation)
+    return this.shapePoints
   }
 
   right() {
@@ -1474,13 +1530,23 @@ class Shape extends getShapeCoordinate {
   canDrop() {
     let canGo = true
 
-    this.shapePoints.forEach(({ x, y }) => {
-      if (y >= 20) {
+    this.getShape().forEach(({ x, y }) => {
+      if (y > 20) {
         canGo = false
       }
     })
 
     return canGo
+  }
+
+  getCurrentShapeRotaion() {
+    let rotationName
+    Object.keys(this.shapeRotaions).forEach((keyItem) => {
+      if (this.shapeRotaions[keyItem]) {
+        rotationName = keyItem
+      }
+    })
+    return rotationName
   }
 
 }

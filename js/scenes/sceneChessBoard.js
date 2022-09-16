@@ -211,7 +211,7 @@ class SceneChessBoard extends Phaser.Scene {
     this.counter = 0
     // should select next shape name and rotation
     setInterval(() => {
-      if (this.counter > 2) return
+      if (this.counter > 4) return
       if (!this.sh.drop(Object.keys(this.blocks))) {
 
         this.gameObjects.forEach((gameObjects) => {
@@ -277,7 +277,7 @@ class SceneChessBoard extends Phaser.Scene {
       // console.log("-----------------")
 
     // }, 800)
-    }, 400)
+    }, 50)
 
 
     // console.log(s.getShape())
@@ -291,6 +291,7 @@ class SceneChessBoard extends Phaser.Scene {
   completeCloumns() {
     let completedY
     for (let y = 1; y <= 20; y++) {
+
       let counter = 0
       for (let x = 1; x <= 10; x++) {
         if (this.blocks[x + "," + y]) {
@@ -306,23 +307,25 @@ class SceneChessBoard extends Phaser.Scene {
             this.plugins.get('rexdropshadowpipelineplugin').remove(this.blocks[x + "," + y]);
             this.blocks[x + "," + y].destroy()
             delete this.blocks[x + "," + y]
+            console.error(x, y)
           }
         }
 
         setTimeout(() => {
-
+          // console.log(this.blocks)
           Object.keys(this.blocks).forEach((key) => {
             const coor = key.split(",")
-            let x = parseInt(coor[0])
-            let y = parseInt(coor[1])
-            let colorName = this.blocks[x + "," + y].name
-            this.blocks[x + "," + y].destroy()
-            delete this.blocks[x + "," + y]
-            y++
-            if (y <= completedY) {
-              let img = this.add.image(this.getX(x), this.getY(y), colorName);
+            let nx = parseInt(coor[0])
+            let ny = parseInt(coor[1])
+            let colorName = this.blocks[nx + "," + ny].name
+            this.blocks[nx + "," + ny].destroy()
+            delete this.blocks[nx + "," + ny]
+            ny++
+            if (ny <= completedY) {
+              console.log(nx, ny, completedY)
+              let img = this.add.image(this.getX(nx), this.getY(ny), colorName);
               img.name = colorName
-              this.blocks[x + "," + y] = img
+              this.blocks[nx + "," + ny] = img
             }
           })
 
@@ -339,14 +342,24 @@ class SceneChessBoard extends Phaser.Scene {
 
     switch (this.counter) {
       case 1:
-        this.nextShapeName = "I" // test
+        this.nextShapeName = "cube" // test
         selectedShapee = this.shapes[this.nextShapeName]
-        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 4, y: 1 })
+        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 3, y: 1 })
         break;
       case 2:
-        this.nextShapeName = "I" // test
+        this.nextShapeName = "cube" // test
         selectedShapee = this.shapes[this.nextShapeName]
-        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 8, y: 1 })
+        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 5, y: 1 })
+        break;
+      case 3:
+        this.nextShapeName = "cube" // test
+        selectedShapee = this.shapes[this.nextShapeName]
+        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 7, y: 1 })
+        break;
+      case 4:
+        this.nextShapeName = "cube" // test
+        selectedShapee = this.shapes[this.nextShapeName]
+        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 9, y: 1 })
         break;
       default:
         break;

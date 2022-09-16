@@ -216,8 +216,9 @@ class SceneChessBoard extends Phaser.Scene {
           gameObjects.destroy();
         })
 
-        this.sh.getShape(true).forEach(({ x, y }) => {
-          const img = this.add.image(this.getX(x), this.getY(y), "b_b");
+        this.sh.getShape().forEach(({ x, y }) => {
+          let img = this.add.image(this.getX(x), this.getY(y), "b_b");
+          img.name = "b_b"
           this.blocks[x + "," + y] = img
         })
 
@@ -225,6 +226,7 @@ class SceneChessBoard extends Phaser.Scene {
         console.error("FINISH")
         this.counter++
         this.nextShape()
+        this.completeCloumns()
         return
       }
 
@@ -273,7 +275,7 @@ class SceneChessBoard extends Phaser.Scene {
       // console.log("-----------------")
 
       // }, 800)
-    }, 100)
+    }, 100 / 2)
 
 
     // console.log(s.getShape())
@@ -284,6 +286,57 @@ class SceneChessBoard extends Phaser.Scene {
 
   }
 
+  completeCloumns() {
+    let completedY
+    for (let y = 1; y <= 20; y++) {
+      let counter = 0
+      for (let x = 1; x <= 10; x++) {
+        if (this.blocks[x + "," + y]) {
+          counter++
+        }
+      }
+
+      if (counter == 10) {
+        completedY = y
+        console.error("COMPLETED", y)
+        for (let x = 1; x <= 10; x++) {
+          if (this.blocks[x + "," + y]) {
+            this.blocks[x + "," + y].destroy()
+            delete this.blocks[x + "," + y]
+          }
+        }
+
+        setTimeout(() => {
+
+          Object.keys(this.blocks).forEach((key) => {
+            const coor = key.split(",")
+            let x = parseInt(coor[0])
+            let y = parseInt(coor[1])
+            let colorName = this.blocks[x + "," + y].name
+            this.blocks[x + "," + y].destroy()
+            delete this.blocks[x + "," + y]
+            y++
+            if (y <= completedY) {
+              console.log(">>", y)
+              let img = this.add.image(this.getX(x), this.getY(y), colorName);
+              img.name = colorName
+              this.blocks[x + "," + y] = img
+            }
+          })
+
+        }, 100)
+
+
+
+      }
+
+    }
+
+
+
+    console.log(this.blocks)
+  }
+
   nextShape() {
     let selectedShapee
 
@@ -292,13 +345,13 @@ class SceneChessBoard extends Phaser.Scene {
         console.error("im fuckin")
         this.nextShapeName = "I" // test
         selectedShapee = this.shapes[this.nextShapeName]
-        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, {x: 4, y: 1})
+        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 4, y: 1 })
         break;
       case 2:
         console.error("im fuckin")
         this.nextShapeName = "I" // test
         selectedShapee = this.shapes[this.nextShapeName]
-        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, {x: 8, y: 1})
+        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 8, y: 1 })
         break;
       default:
         break;
@@ -311,13 +364,11 @@ class SceneChessBoard extends Phaser.Scene {
   }
 
   removeAndDraw() {
-    console.log(this.sh.getShape())
     this.gameObjects.forEach((gameObjects) => {
       gameObjects.destroy();
     })
 
     this.sh.getShape().forEach(({ x, y }) => {
-      console.log(x, y)
       const img = this.add.image(this.getX(x), this.getY(y), "b_b");
       this.gameObjects.push(img)
     })
@@ -918,7 +969,7 @@ class SceneChessBoard extends Phaser.Scene {
 
 }
 
-class getWorldCoordinate {
+class WorldCoordinate {
   constructor() {
     this.center = {}
   }
@@ -1131,7 +1182,7 @@ class getWorldCoordinate {
 
 }
 
-class getShapeCoordinate extends getWorldCoordinate {
+class getShapeCoordinate extends WorldCoordinate {
   constructor() {
     super();
     this.allShapeDirectionsName = {
@@ -1430,7 +1481,6 @@ class getShapeCoordinate extends getWorldCoordinate {
         }
         break;
       case "I":
-        console.log(r)
         if (r === this.allShapeDirectionsName.top) {
           shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.topLeft, this.center.x, this.center.y))
           shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.top, this.center.x, this.center.y))

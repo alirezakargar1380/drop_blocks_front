@@ -87,21 +87,32 @@ class SceneChessBoard extends Phaser.Scene {
 
   preload() {
     this.load.image("b_b", "images/b_b.png");
+    this.load.image("next_bg", "images/next_bg.png");
+    this.load.image("line_bg", "images/line_bg.png");
     this.load.image("grid", "images/grid.png");
 
     this.load.plugin('rexdropshadowpipelineplugin', 'plugins/rexdropshadowpipelineplugin.min.js', true);
   }
 
-  create() {
-    // socket.emit("message")
+  gx(x) {
+    return game.config.width / 2 - (38 / 2) - (38 * 5) + (x * 38);
+  }
 
+  gy(y) {
+    return game.config.height / 2 - (38 / 2) - (38 * 10) + (y * 38);
+  }
+
+  create() {
+    // grid
+    this.add.image(game.config.width / 2, game.config.height / 2, "grid");
+
+    this.add.image(this.gx(12) + 10, this.gy(3) - (38 / 2), "next_bg");
+    this.add.image(this.gx(12) + 10, this.gy(6) + 15, "line_bg");
     // =============================================================================== DRAW SHAPE
     this.nextShapeName = this.selectRandomShapeName()
     let selectedShapee = this.shapes["cube"]
     this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 1, y: 1 })
 
-    // grid
-    this.add.image(game.config.width / 2, game.config.height / 2, "grid");
 
     this.input.on('pointermove', function (pointer) {
       if (!this.clicked || this.shapeMoved) return
@@ -219,9 +230,7 @@ class SceneChessBoard extends Phaser.Scene {
         })
 
         this.sh.getShape().forEach(({ x, y }) => {
-          let img = this.add.image(this.getX(x), this.getY(y), "b_b");
-          img.name = "b_b"
-          this.blocks[x + "," + y] = img
+          this.blocks[x + "," + y] = this.makeGameObject(x, y)
         })
 
         // console.log(this.blocks)
@@ -276,7 +285,7 @@ class SceneChessBoard extends Phaser.Scene {
 
       // console.log("-----------------")
 
-    // }, 800)
+      // }, 800)
     }, 50)
 
 
@@ -286,6 +295,12 @@ class SceneChessBoard extends Phaser.Scene {
     // console.log(selectedShape)
 
 
+  }
+
+  makeGameObject(x, y) {
+    let img = this.add.image(this.gx(x), this.gy(y), "b_b");
+    img.name = "b_b"
+    return img
   }
 
   completeCloumns() {
@@ -307,7 +322,6 @@ class SceneChessBoard extends Phaser.Scene {
             this.plugins.get('rexdropshadowpipelineplugin').remove(this.blocks[x + "," + y]);
             this.blocks[x + "," + y].destroy()
             delete this.blocks[x + "," + y]
-            console.error(x, y)
           }
         }
 
@@ -378,7 +392,7 @@ class SceneChessBoard extends Phaser.Scene {
     })
 
     this.sh.getShape().forEach(({ x, y }) => {
-      const img = this.add.image(this.getX(x), this.getY(y), "b_b");
+      const img = this.makeGameObject(x, y)
       this.addShadowToGameObject(img)
       this.gameObjects.push(img)
     })

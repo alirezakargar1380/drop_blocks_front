@@ -27,6 +27,7 @@
       padding: 0;
       background: #14121F;
       font-family: 'lalezar';
+      overflow: hidden;
     }
 
     #phaser-game {
@@ -159,13 +160,14 @@
   // ========================================================= TEST
 
   window.onload = function () {
+    console.log(window.innerWidth)
     let config = {
       type: Phaser.AUTO,
-      width: 1080,
-      height: 1080,
+      width: window.innerWidth,
+      height: window.innerHeight,
       parent: 'phaser-game',
       antialias: true,
-      transparent: true,
+      transparent: false,
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH

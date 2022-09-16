@@ -88,6 +88,8 @@ class SceneChessBoard extends Phaser.Scene {
   preload() {
     this.load.image("b_b", "images/b_b.png");
     this.load.image("grid", "images/grid.png");
+
+    this.load.plugin('rexdropshadowpipelineplugin', 'plugins/rexdropshadowpipelineplugin.min.js', true);
   }
 
   create() {
@@ -96,7 +98,7 @@ class SceneChessBoard extends Phaser.Scene {
     // =============================================================================== DRAW SHAPE
     this.nextShapeName = this.selectRandomShapeName()
     let selectedShapee = this.shapes["cube"]
-    this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 1, y: 2 })
+    this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 1, y: 1 })
 
     // grid
     this.add.image(game.config.width / 2, game.config.height / 2, "grid");
@@ -274,8 +276,8 @@ class SceneChessBoard extends Phaser.Scene {
 
       // console.log("-----------------")
 
-      // }, 800)
-    }, 100 / 2)
+    // }, 800)
+    }, 400)
 
 
     // console.log(s.getShape())
@@ -301,6 +303,7 @@ class SceneChessBoard extends Phaser.Scene {
         console.error("COMPLETED", y)
         for (let x = 1; x <= 10; x++) {
           if (this.blocks[x + "," + y]) {
+            this.plugins.get('rexdropshadowpipelineplugin').remove(this.blocks[x + "," + y]);
             this.blocks[x + "," + y].destroy()
             delete this.blocks[x + "," + y]
           }
@@ -317,24 +320,18 @@ class SceneChessBoard extends Phaser.Scene {
             delete this.blocks[x + "," + y]
             y++
             if (y <= completedY) {
-              console.log(">>", y)
               let img = this.add.image(this.getX(x), this.getY(y), colorName);
               img.name = colorName
               this.blocks[x + "," + y] = img
             }
           })
 
-        }, 100)
+        }, 200)
 
 
 
       }
-
     }
-
-
-
-    console.log(this.blocks)
   }
 
   nextShape() {
@@ -342,13 +339,11 @@ class SceneChessBoard extends Phaser.Scene {
 
     switch (this.counter) {
       case 1:
-        console.error("im fuckin")
         this.nextShapeName = "I" // test
         selectedShapee = this.shapes[this.nextShapeName]
         this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 4, y: 1 })
         break;
       case 2:
-        console.error("im fuckin")
         this.nextShapeName = "I" // test
         selectedShapee = this.shapes[this.nextShapeName]
         this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 8, y: 1 })
@@ -365,13 +360,39 @@ class SceneChessBoard extends Phaser.Scene {
 
   removeAndDraw() {
     this.gameObjects.forEach((gameObjects) => {
+      this.plugins.get('rexdropshadowpipelineplugin').remove(gameObjects)
       gameObjects.destroy();
     })
 
     this.sh.getShape().forEach(({ x, y }) => {
       const img = this.add.image(this.getX(x), this.getY(y), "b_b");
+      this.addShadowToGameObject(img)
       this.gameObjects.push(img)
     })
+  }
+
+  addShadowToGameObject(gameObject) {
+    // return
+    this.plugins.get('rexdropshadowpipelineplugin').add(gameObject, {
+      // ** Offset **
+      // rotation: 
+      angle: 0,      // degrees
+      distance: 0,
+
+      // ** Shadow color **
+      shadowColor: 0x018F8E,
+      alpha: 0.8,
+
+      // shadowOnly: false,
+
+      // ** Parameters of KawaseBlur **
+      blur: 10,
+      quality: 5,
+      // pixelWidth: 1,
+      // pixelHeight: 1,
+
+      // name: 'rexDropShadowPostFx'
+    });
   }
 
   stickCubes() {

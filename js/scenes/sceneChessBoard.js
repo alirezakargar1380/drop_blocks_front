@@ -86,10 +86,10 @@ class SceneChessBoard extends Phaser.Scene {
     this.blocks = {}
     this.colors = ["b_b", "y_b", "o_b", "r_b", "g_b"]
     this.shapeColors = {
-      "b_b": "018F8E", 
-      "y_b": "929600", 
-      "o_b": "8B6502", 
-      "r_b": "840019", 
+      "b_b": "018F8E",
+      "y_b": "929600",
+      "o_b": "8B6502",
+      "r_b": "840019",
       "g_b": "008131"
     }
   }
@@ -126,6 +126,7 @@ class SceneChessBoard extends Phaser.Scene {
     // =============================================================================== DRAW SHAPE
     let selectedShapee = this.shapes["I"]
     this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 2, y: 1 }, this.selectRandomColor())
+    // this.checkCanRotation()
     this.nextShapeName = this.selectRandomShapeName()
 
     this.input.on('pointermove', function (pointer) {
@@ -135,14 +136,24 @@ class SceneChessBoard extends Phaser.Scene {
       let angle = this.get_angle(this.clickedPositions.x, this.clickedPositions.y, pointer.x, pointer.y)
 
       if (angle >= 45 && angle <= 135) {
-        this.sh.right()
-        this.removeAndDraw()
+        if (!this.checkCanRotation("r")) {
+          console.error("you can't go right")
+        } else {
+          this.sh.right()
+          this.removeAndDraw()
+        }
+        console.log("right")
+
         // socket.emit("right")
       }
 
       if (angle > 225 && angle <= 315) {
-        this.sh.left()
-        this.removeAndDraw()
+        if (!this.checkCanRotation("l")) {
+          console.error("you can't go left")
+        } else {
+          this.sh.left()
+          this.removeAndDraw()
+        }
       }
 
       if (angle > 315 && angle <= 360 || angle >= 0 && angle < 45) {
@@ -172,74 +183,6 @@ class SceneChessBoard extends Phaser.Scene {
       // socket.emit("speed", "slow")
     }, this)
 
-    // console.log(this.getCubePoints(2, 2))
-    // CURRETLY IN topLeft
-    // const newShapePoints = this.getShapePoints(this.shapes.LT.name, 3, this.center, this.direction.top)
-
-    // let newShapePoints = this.getShapePoints(this.shapes.cube.name, 3, this.center, this.direction.center)
-    // newShapePoints.forEach(({ x, y }) => {
-    //   const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
-    //   this.gameObjects.push(imag)
-    // })
-
-    // newShapePoints = this.getShapePoints(this.shapes.ZL.name, 3, this.center, this.direction.left)
-    // newShapePoints.forEach(({ x, y }) => {
-    //   const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
-    //   this.gameObjects.push(imag)
-    // })
-
-    // this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "downRight")
-    // this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "downLeft")
-    // this.getShapePoints(this.shapes.L, 2, this.newStartPoint, "topLeft")
-
-
-    // const Tshape = this.getShapePoints(this.shapes.T.name, 3, this.center, "centerTop")
-    // console.log(Tshape)
-
-    // const Tshape = this.getShapePoints(this.shapes.T.name, 3, this.center, "centerRight")
-    // console.log(Tshape)
-
-    // const Tshape = this.getShapePoints(this.shapes.T.name, 3, this.center, "centerDown")
-    // console.log(Tshape)
-
-    // const Tshape = this.getShapePoints(this.shapes.T.name, 3, this.center, "centerLeft")
-    // console.log(Tshape)
-
-    // this.add.image(this.getX(1), this.getY(1), "b_b");
-    // this.add.image(this.getX(2), this.getY(1), "b_b");
-
-    // socket.on("message", (coor) => {
-    //   coor.filled.forEach(({x,y}) => {
-    //     const name = `${x}_${y}`
-    //     if(!this.filledHomes[name]) {
-    //       this.filledHomes[name] = this.add.image(this.getX(x), this.getY(y), "b_b");
-    //     }
-    //   })
-
-    //   this.gameObjects.forEach((gameObjects) => {
-    //     gameObjects.destroy();
-    //   })
-
-    //   coor.filledHome.forEach(({ x, y }) => {
-    //     const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
-    //     this.gameObjects.push(imag)
-    //   })
-
-    //   return
-    //   this.center = coor
-    //   const currentRotationName = this.getCurrentShapeRotaion(this.shapes.LT.rotations)
-    //   const newShapePoints = this.getShapePoints(this.shapes.LT.name, 2, this.center, currentRotationName)
-
-    //   this.gameObjects.forEach((gameObjects) => {
-    //     gameObjects.destroy();
-    //   })
-
-    //   newShapePoints.forEach(({ x, y }) => {
-    //     const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
-    //     this.gameObjects.push(imag)
-    //   })
-    // }, this)
-
     this.counter = 0
     // should select next shape name and rotation
     setInterval(() => {
@@ -254,7 +197,7 @@ class SceneChessBoard extends Phaser.Scene {
           this.blocks[x + "," + y] = this.makeGameObject(x, y)
         })
 
-        console.error("FINISH")
+        // console.error("FINISH")
         this.counter++
         this.nextShape()
         this.completeCloumns()
@@ -263,9 +206,27 @@ class SceneChessBoard extends Phaser.Scene {
 
       this.removeAndDraw()
 
-      // }, 800)
-    }, 50)
+    }, 800)
+    // }, 50)
 
+  }
+
+  checkCanRotation(directon) {
+    let can = true
+    const checkShape = new Shape(this.sh.shapeName, this.sh.shapeRotaions, {
+      x: this.sh.center.x,
+      y: this.sh.center.y + 1
+    })
+
+    if (directon === "l") checkShape.left()
+    if (directon === "r") checkShape.right()
+    
+
+    checkShape.getShape().forEach(({ x, y }) => {
+      if (x <= 0 || x > 10) can = false
+    })
+
+    return can
   }
 
   makeGameObject(x, y) {
@@ -846,18 +807,6 @@ class SceneChessBoard extends Phaser.Scene {
     return coor
   }
 
-  // canGoHere(direction) {
-  //   const points = this.getCubePoints(this.center.x, this.center.y)
-  //   let canGo = false;
-  //   points.forEach(({ x, y }) => {
-  //     if (x === direction.x && y === direction.y) {
-  //       canGo = true
-  //     }
-  //   })
-
-  //   return canGo
-  // }
-
   straightLineDown(lineNumYouWantToGo, newStartPoint) {
     let canGo = true
     let directions = []
@@ -1008,8 +957,15 @@ class SceneChessBoard extends Phaser.Scene {
 
 }
 
-class WorldCoordinate {
+class MoveAndRotationChecker {
+  c(sh) {
+    const shape = new Shape()
+  }
+}
+
+class WorldCoordinate extends MoveAndRotationChecker {
   constructor() {
+    super();
     this.center = {}
   }
 
@@ -1542,7 +1498,7 @@ class getShapeCoordinate extends WorldCoordinate {
 }
 
 class Shape extends getShapeCoordinate {
-  // class Shape {
+
   constructor(name, rotations, startCoor, color) {
     super(name)
     this.shapeName = name
@@ -1609,10 +1565,6 @@ class Shape extends getShapeCoordinate {
   }
 
   left() {
-    if (this.center.x <= 2) {
-      return false
-    }
-
     this.center.x--
     return true
   }

@@ -84,10 +84,23 @@ class SceneChessBoard extends Phaser.Scene {
     this.gameObjects = []
     this.filledHomes = {}
     this.blocks = {}
+    this.colors = ["b_b", "y_b", "o_b", "r_b", "g_b"]
+    this.shapeColors = {
+      "b_b": "018F8E", 
+      "y_b": "929600", 
+      "o_b": "8B6502", 
+      "r_b": "840019", 
+      "g_b": "008131"
+    }
   }
 
   preload() {
     this.load.image("b_b", "images/b_b.png");
+    this.load.image("y_b", "images/y_b.png");
+    this.load.image("o_b", "images/o_b.png");
+    this.load.image("r_b", "images/r_b.png");
+    this.load.image("g_b", "images/g_b.png");
+
     this.load.image("next_bg", "images/next_bg.png");
     this.load.image("line_bg", "images/line_bg.png");
     this.load.image("grid", "images/grid.png");
@@ -107,14 +120,12 @@ class SceneChessBoard extends Phaser.Scene {
     // grid
     this.add.image(game.config.width / 2 - this.marginRight, game.config.height / 2, "grid");
 
-    const bshape = this.add.image(this.gx(8), this.gy(1), "b_b");
-
     this.add.image(this.gx(12) + 10, this.gy(3) - (38 / 2), "next_bg");
     this.add.image(this.gx(12) + 10, this.gy(6) + 15, "line_bg");
     // =============================================================================== DRAW SHAPE
     this.nextShapeName = this.selectRandomShapeName()
-    let selectedShapee = this.shapes["T"]
-    this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 1, y: 1 })
+    let selectedShapee = this.shapes["I"]
+    this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 2, y: 1 }, this.selectRandomColor())
 
 
     this.input.on('pointermove', function (pointer) {
@@ -139,6 +150,7 @@ class SceneChessBoard extends Phaser.Scene {
       }
 
       this.shapeMoved = true
+      this.clicked = false
     }, this)
 
     this.input.on('pointerdown', function (pointer) {
@@ -149,6 +161,12 @@ class SceneChessBoard extends Phaser.Scene {
     }, this)
 
     this.input.on('pointerup', function (pointer) {
+      if (this.clicked) {
+        console.log("clicked")
+        this.sh.getNextRotation()
+        this.removeAndDraw()
+      }
+
       this.clicked = false
       this.shapeMoved = false
       // socket.emit("speed", "slow")
@@ -236,9 +254,6 @@ class SceneChessBoard extends Phaser.Scene {
           this.blocks[x + "," + y] = this.makeGameObject(x, y)
         })
 
-        
-
-        // console.log(this.blocks)
         console.error("FINISH")
         this.counter++
         this.nextShape()
@@ -247,66 +262,15 @@ class SceneChessBoard extends Phaser.Scene {
       }
 
       this.removeAndDraw()
-      this.sh.getNextRotation()
-
-      return
-      this.center.x = this.center.x
-      this.center.y = this.center.y + 1
-
-      let nextRotaionResult = this.getNextRotation(this.shapes.T.rotations)
-      this.shapes.T.rotations = nextRotaionResult.newRotaionObject
-
-      const newShapePoints = this.getShapePoints(this.shapes.T.name, 3, this.center, nextRotaionResult.nextRotaionName)
-
-      this.gameObjects.forEach((gameObjects) => {
-        gameObjects.destroy();
-      })
-
-      newShapePoints.forEach(({ x, y }) => {
-        const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
-        this.gameObjects.push(imag)
-      })
-
-      // return
-      // const currentRotationName = this.getCurrentShapeRotaion(this.shapes.L.rotations)
-
-      // this.center.x = this.center.x
-      // this.center.y = this.center.y + 1
-
-      // let nextRotaionResult = this.getNextRotation(this.shapes.L.rotations)
-      // this.shapes.L.rotations = nextRotaionResult.newRotaionObject
-      // const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.center, nextRotaionResult.nextRotaionName)
-
-      // const currentRotationName = this.getCurrentShapeRotaion(this.shapes.L.rotations)
-      // const newShapePoints = this.getShapePoints(this.shapes.L.name, 2, this.center, currentRotationName)
-
-      // this.gameObjects.forEach((gameObjects) => {
-      //   gameObjects.destroy();
-      // })
-
-      // newShapePoints.forEach(({ x, y }) => {
-      //   const imag = this.add.image(this.getX(x), this.getY(y), "b_b");
-      //   this.gameObjects.push(imag)
-      // })
-
-      // console.log("-----------------")
 
       }, 800)
     // }, 50)
 
-
-    // console.log(s.getShape())
-    // let selectedShape = this.shapes[this.selectRandomShapeName()]
-    // let selectedShape = this.shapes["L"]
-    // console.log(selectedShape)
-
-
   }
 
   makeGameObject(x, y) {
-    console.log(this.sh.colorName)
-    let img = this.add.image(this.gx(x), this.gy(y), "b_b");
-    img.name = "b_b"
+    let img = this.add.image(this.gx(x), this.gy(y), this.sh.colorName);
+    img.name = this.sh.colorName
     return img
   }
 
@@ -379,22 +343,22 @@ class SceneChessBoard extends Phaser.Scene {
       case 1:
         this.nextShapeName = "cube" // test
         selectedShapee = this.shapes[this.nextShapeName]
-        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 3, y: 1 })
+        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 3, y: 1 }, this.selectRandomColor())
         break;
       case 2:
         this.nextShapeName = "cube" // test
         selectedShapee = this.shapes[this.nextShapeName]
-        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 5, y: 1 })
+        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 5, y: 1 }, this.selectRandomColor())
         break;
       case 3:
         this.nextShapeName = "cube" // test
         selectedShapee = this.shapes[this.nextShapeName]
-        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 7, y: 1 })
+        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 7, y: 1 }, this.selectRandomColor())
         break;
       case 4:
         this.nextShapeName = "cube" // test
         selectedShapee = this.shapes[this.nextShapeName]
-        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 9, y: 1 })
+        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 9, y: 1 }, this.selectRandomColor())
         break;
       default:
         break;
@@ -420,7 +384,6 @@ class SceneChessBoard extends Phaser.Scene {
   }
 
   addShadowToGameObject(gameObject) {
-    // return
     this.plugins.get('rexdropshadowpipelineplugin').add(gameObject, {
       // ** Offset **
       // rotation: 
@@ -428,7 +391,7 @@ class SceneChessBoard extends Phaser.Scene {
       distance: 0,
 
       // ** Shadow color **
-      shadowColor: 0x018F8E,
+      shadowColor: parseInt(`0x${this.shapeColors[gameObject.name]}`),
       alpha: 0.8,
 
       // shadowOnly: false,
@@ -445,6 +408,10 @@ class SceneChessBoard extends Phaser.Scene {
 
   stickCubes() {
 
+  }
+
+  selectRandomColor() {
+    return this.colors[this.randomInteger(0, this.colors.length - 1)]
   }
 
   randomInteger(min, max) {
@@ -1572,9 +1539,10 @@ class getShapeCoordinate extends WorldCoordinate {
 
 class Shape extends getShapeCoordinate {
   // class Shape {
-  constructor(name, rotations, startCoor) {
+  constructor(name, rotations, startCoor, color) {
     super(name)
     this.shapeName = name
+    this.colorName = color
     this.shapeRotaions = rotations
     this.shapePoints = []
     this.setCenterPoint(startCoor.x, startCoor.y)

@@ -158,16 +158,31 @@
   // socket.emit("create-battle", id)
   // socket.on("fuck", () => { console.log("fuck") })
   // ========================================================= TEST
+  let w = 540
+  let h = 800
+
+  if (w > window.innerWidth) {
+    w = w - window.innerWidth
+    w = w + 540
+  }
+
+  if (w > window.innerHeight) {
+    h = h - window.innerWidth
+    h = h + 800
+  }
+
+  console.log(window.innerWidth, window.innerHeight)
 
   window.onload = function () {
     console.log(window.innerWidth)
     let config = {
       type: Phaser.AUTO,
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width: w,
+      // height: window.innerHeight,
+      height: h,
       parent: 'phaser-game',
       antialias: true,
-      transparent: false,
+      transparent: true,
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH

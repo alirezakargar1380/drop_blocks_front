@@ -3,6 +3,7 @@ class SceneChessBoard extends Phaser.Scene {
     super();
     this.clicked = false
     this.shapeMoved = false
+    this.marginRight = 50
     this.clickedPositions = {
       x: 0,
       y: 0
@@ -95,7 +96,7 @@ class SceneChessBoard extends Phaser.Scene {
   }
 
   gx(x) {
-    return game.config.width / 2 - (38 / 2) - (38 * 5) + (x * 38);
+    return game.config.width / 2 - (38 / 2) - (38 * 5) + (x * 38) - this.marginRight;
   }
 
   gy(y) {
@@ -104,13 +105,15 @@ class SceneChessBoard extends Phaser.Scene {
 
   create() {
     // grid
-    this.add.image(game.config.width / 2, game.config.height / 2, "grid");
+    this.add.image(game.config.width / 2 - this.marginRight, game.config.height / 2, "grid");
+
+    const bshape = this.add.image(this.gx(8), this.gy(1), "b_b");
 
     this.add.image(this.gx(12) + 10, this.gy(3) - (38 / 2), "next_bg");
     this.add.image(this.gx(12) + 10, this.gy(6) + 15, "line_bg");
     // =============================================================================== DRAW SHAPE
     this.nextShapeName = this.selectRandomShapeName()
-    let selectedShapee = this.shapes["cube"]
+    let selectedShapee = this.shapes["T"]
     this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 1, y: 1 })
 
 
@@ -233,6 +236,8 @@ class SceneChessBoard extends Phaser.Scene {
           this.blocks[x + "," + y] = this.makeGameObject(x, y)
         })
 
+        
+
         // console.log(this.blocks)
         console.error("FINISH")
         this.counter++
@@ -242,6 +247,7 @@ class SceneChessBoard extends Phaser.Scene {
       }
 
       this.removeAndDraw()
+      this.sh.getNextRotation()
 
       return
       this.center.x = this.center.x
@@ -285,8 +291,8 @@ class SceneChessBoard extends Phaser.Scene {
 
       // console.log("-----------------")
 
-      // }, 800)
-    }, 50)
+      }, 800)
+    // }, 50)
 
 
     // console.log(s.getShape())
@@ -298,6 +304,7 @@ class SceneChessBoard extends Phaser.Scene {
   }
 
   makeGameObject(x, y) {
+    console.log(this.sh.colorName)
     let img = this.add.image(this.gx(x), this.gy(y), "b_b");
     img.name = "b_b"
     return img
@@ -332,12 +339,26 @@ class SceneChessBoard extends Phaser.Scene {
             let nx = parseInt(coor[0])
             let ny = parseInt(coor[1])
             let colorName = this.blocks[nx + "," + ny].name
+
+            if (ny < completedY) {
+              this.tweens.add({
+                targets: this.blocks[nx + "," + ny],
+                props: {
+                  y: {
+                    value: this.gy(ny + 1),
+                    duration: 100,
+                  }
+                }
+              })
+            }
+
+            return
             this.blocks[nx + "," + ny].destroy()
             delete this.blocks[nx + "," + ny]
             ny++
             if (ny <= completedY) {
               console.log(nx, ny, completedY)
-              let img = this.add.image(this.getX(nx), this.getY(ny), colorName);
+              let img = this.add.image(this.gx(nx), this.gy(ny), colorName);
               img.name = colorName
               this.blocks[nx + "," + ny] = img
             }
@@ -1391,7 +1412,6 @@ class getShapeCoordinate extends WorldCoordinate {
         // centerDown
         newStartPoint = this.getCoorByDirection("downRight", this.center.x, this.center.y)
         if (this.canGoHere(newStartPoint) && r === "centerDown") {
-          console.log("center down")
           // down
           result = this.straightLineLeft(stepByRotation, newStartPoint)
           if (result.canGo) {
@@ -1557,7 +1577,6 @@ class Shape extends getShapeCoordinate {
     this.shapeName = name
     this.shapeRotaions = rotations
     this.shapePoints = []
-    this.selectedRotation = this.getCurrentShapeRotaion()
     this.setCenterPoint(startCoor.x, startCoor.y)
     // console.log(">>>>>>>>>>>>>", this.center, "<<<<<<<<<<<<<<<<<<<")
   }
@@ -1603,7 +1622,8 @@ class Shape extends getShapeCoordinate {
   }
 
   getShape() {
-    this.shapePoints = this.getShapePoints(this.shapeName, 3, this.selectedRotation)
+    const rotationName = this.getCurrentShapeRotaion()
+    this.shapePoints = this.getShapePoints(this.shapeName, 3, rotationName)
     return this.shapePoints
   }
 
@@ -1645,6 +1665,46 @@ class Shape extends getShapeCoordinate {
       }
     })
     return rotationName
+  }
+
+  getNextRotation() {
+    let nextIs = false
+    let foundNext = false
+    let nextRotaionName
+    let shapeRotaitons = Object.keys(this.shapeRotaions)
+
+    Object.keys(this.shapeRotaions).forEach((keyItem, index) => {
+
+      if (foundNext) return
+      if (nextIs) {
+        Object.keys(this.shapeRotaions).forEach((key) => {
+          this.shapeRotaions[key] = false
+        })
+        this.shapeRotaions[keyItem] = true
+        foundNext = true
+        nextRotaionName = keyItem
+      }
+
+      if (this.shapeRotaions[keyItem]) {
+        nextIs = true
+      }
+
+      if (index === shapeRotaitons.length - 1 && nextIs && !foundNext) nextIs = false
+
+    })
+
+    if (!nextIs) {
+      Object.keys(this.shapeRotaions).forEach((key) => {
+        this.shapeRotaions[key] = false
+      })
+      this.shapeRotaions[shapeRotaitons[0]] = true;
+      nextRotaionName = shapeRotaitons[0]
+    }
+
+    return {
+      newRotaionObject: this.shapeRotaions,
+      nextRotaionName: nextRotaionName
+    }
   }
 
 }

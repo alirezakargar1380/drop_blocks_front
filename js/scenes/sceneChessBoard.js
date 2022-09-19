@@ -122,11 +122,11 @@ class SceneChessBoard extends Phaser.Scene {
 
     this.add.image(this.gx(12) + 10, this.gy(3) - (38 / 2), "next_bg");
     this.add.image(this.gx(12) + 10, this.gy(6) + 15, "line_bg");
+
     // =============================================================================== DRAW SHAPE
-    this.nextShapeName = this.selectRandomShapeName()
     let selectedShapee = this.shapes["I"]
     this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 2, y: 1 }, this.selectRandomColor())
-
+    this.nextShapeName = this.selectRandomShapeName()
 
     this.input.on('pointermove', function (pointer) {
       if (!this.clicked || this.shapeMoved) return
@@ -263,8 +263,8 @@ class SceneChessBoard extends Phaser.Scene {
 
       this.removeAndDraw()
 
-      }, 800)
-    // }, 50)
+      // }, 800)
+    }, 50)
 
   }
 
@@ -339,35 +339,38 @@ class SceneChessBoard extends Phaser.Scene {
   nextShape() {
     let selectedShapee
 
-    switch (this.counter) {
-      case 1:
-        this.nextShapeName = "cube" // test
-        selectedShapee = this.shapes[this.nextShapeName]
-        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 3, y: 1 }, this.selectRandomColor())
-        break;
-      case 2:
-        this.nextShapeName = "cube" // test
-        selectedShapee = this.shapes[this.nextShapeName]
-        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 5, y: 1 }, this.selectRandomColor())
-        break;
-      case 3:
-        this.nextShapeName = "cube" // test
-        selectedShapee = this.shapes[this.nextShapeName]
-        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 7, y: 1 }, this.selectRandomColor())
-        break;
-      case 4:
-        this.nextShapeName = "cube" // test
-        selectedShapee = this.shapes[this.nextShapeName]
-        this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 9, y: 1 }, this.selectRandomColor())
-        break;
-      default:
-        break;
-    }
+    selectedShapee = this.shapes[this.nextShapeName]
+    this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 3, y: 1 }, this.selectRandomColor())
 
-    this.nextShapeName = "T" // test
+    // switch (this.counter) {
+    //   case 1:
+    //     this.nextShapeName = "cube" // test
+    //     selectedShapee = this.shapes[this.nextShapeName]
+    //     this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 3, y: 1 }, this.selectRandomColor())
+    //     break;
+    //   case 2:
+    //     this.nextShapeName = "cube" // test
+    //     selectedShapee = this.shapes[this.nextShapeName]
+    //     this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 5, y: 1 }, this.selectRandomColor())
+    //     break;
+    //   case 3:
+    //     this.nextShapeName = "cube" // test
+    //     selectedShapee = this.shapes[this.nextShapeName]
+    //     this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 7, y: 1 }, this.selectRandomColor())
+    //     break;
+    //   case 4:
+    //     this.nextShapeName = "cube" // test
+    //     selectedShapee = this.shapes[this.nextShapeName]
+    //     this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 9, y: 1 }, this.selectRandomColor())
+    //     break;
+    //   default:
+    //     break;
+    // }
+
+    // this.nextShapeName = "T" // test
     // let selectedShapee = this.shapes[this.nextShapeName]
     // this.sh = new Shape(selectedShapee.name, selectedShapee.rotations)
-    // this.nextShapeName = this.selectRandomShapeName()
+    this.nextShapeName = this.selectRandomShapeName()
   }
 
   removeAndDraw() {
@@ -1246,9 +1249,10 @@ class getShapeCoordinate extends WorldCoordinate {
   getShapePoints(shapeName, stepByRotation, r) {
     let newStartPoint
     let shapePoint = [];
-    let counter = 0;
-    let maxCupe = 4;
+    let maxCupe = 0
     let result
+    let lastStartPoint = this.center
+    this.direction = this.allShapeDirectionsName
 
     switch (shapeName) {
       case "L":
@@ -1408,10 +1412,10 @@ class getShapeCoordinate extends WorldCoordinate {
         break;
       case "LT":
         // top
-        newStartPoint = this.getCoorByDirection(this.direction.topRight, lastStartPoint.x, lastStartPoint.y)
-        if (this.canGoHere(newStartPoint) && r === this.direction.top) {
+        newStartPoint = this.getCoorByDirection(this.allShapeDirectionsName.topRight, lastStartPoint.x, lastStartPoint.y)
+        if (this.canGoHere(newStartPoint) && r === this.allShapeDirectionsName.top) {
           // top
-          shapePoint.push(this.getCoorByDirection(this.direction.top, lastStartPoint.x, lastStartPoint.y))
+          shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.top, lastStartPoint.x, lastStartPoint.y))
           // down
           result = this.straightLineDown(3, newStartPoint);
           if (result.canGo) {
@@ -1422,10 +1426,10 @@ class getShapeCoordinate extends WorldCoordinate {
         }
 
         // right
-        newStartPoint = this.getCoorByDirection(this.direction.downRight, lastStartPoint.x, lastStartPoint.y)
-        if (this.canGoHere(newStartPoint) && r === this.direction.right) {
+        newStartPoint = this.getCoorByDirection(this.allShapeDirectionsName.downRight, lastStartPoint.x, lastStartPoint.y)
+        if (this.canGoHere(newStartPoint) && r === this.allShapeDirectionsName.right) {
           // right
-          shapePoint.push(this.getCoorByDirection(this.direction.right, lastStartPoint.x, lastStartPoint.y))
+          shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.right, lastStartPoint.x, lastStartPoint.y))
           // left
           result = this.straightLineLeft(3, newStartPoint);
           if (result.canGo) {
@@ -1436,10 +1440,10 @@ class getShapeCoordinate extends WorldCoordinate {
         }
 
         // down
-        newStartPoint = this.getCoorByDirection(this.direction.downLeft, lastStartPoint.x, lastStartPoint.y)
-        if (this.canGoHere(newStartPoint) && r === this.direction.down) {
+        newStartPoint = this.getCoorByDirection(this.allShapeDirectionsName.downLeft, lastStartPoint.x, lastStartPoint.y)
+        if (this.canGoHere(newStartPoint) && r === this.allShapeDirectionsName.down) {
           // down
-          shapePoint.push(this.getCoorByDirection(this.direction.down, lastStartPoint.x, lastStartPoint.y))
+          shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.down, lastStartPoint.x, lastStartPoint.y))
           // left
           result = this.straightLineTop(3, newStartPoint);
           if (result.canGo) {
@@ -1450,10 +1454,10 @@ class getShapeCoordinate extends WorldCoordinate {
         }
 
         // left
-        newStartPoint = this.getCoorByDirection(this.direction.topLeft, lastStartPoint.x, lastStartPoint.y)
-        if (this.canGoHere(newStartPoint) && r === this.direction.left) {
+        newStartPoint = this.getCoorByDirection(this.allShapeDirectionsName.topLeft, lastStartPoint.x, lastStartPoint.y)
+        if (this.canGoHere(newStartPoint) && r === this.allShapeDirectionsName.left) {
           // down
-          shapePoint.push(this.getCoorByDirection(this.direction.left, lastStartPoint.x, lastStartPoint.y))
+          shapePoint.push(this.getCoorByDirection(this.allShapeDirectionsName.left, lastStartPoint.x, lastStartPoint.y))
           // left
           result = this.straightLineRight(3, newStartPoint);
           if (result.canGo) {

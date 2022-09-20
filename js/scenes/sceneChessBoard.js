@@ -92,6 +92,7 @@ class SceneChessBoard extends Phaser.Scene {
       "r_b": "840019",
       "g_b": "008131"
     }
+    this.intervalTime = 800
   }
 
   preload() {
@@ -157,6 +158,9 @@ class SceneChessBoard extends Phaser.Scene {
       }
 
       if (angle > 315 && angle <= 360 || angle >= 0 && angle < 45) {
+        this.intervalTime = 400
+        this.movement()
+        console.log("down")
         // socket.emit("speed", "fast")
       }
 
@@ -178,15 +182,27 @@ class SceneChessBoard extends Phaser.Scene {
         this.removeAndDraw()
       }
 
+      if (this.intervalTime === 400) {
+        this.intervalTime = 800
+        this.movement()
+      }
+
       this.clicked = false
       this.shapeMoved = false
+
+
       // socket.emit("speed", "slow")
     }, this)
 
     this.counter = 0
-    // should select next shape name and rotation
-    setInterval(() => {
-      if (this.counter > 4) return
+    this.movement()
+  }
+
+  movement() {
+    if (this.interval) clearInterval(this.interval)
+
+    this.interval = setInterval(() => {
+      if (this.counter > 5) return
       if (!this.sh.drop(Object.keys(this.blocks))) {
 
         this.gameObjects.forEach((gameObjects) => {
@@ -206,9 +222,7 @@ class SceneChessBoard extends Phaser.Scene {
 
       this.removeAndDraw()
 
-    }, 800)
-    // }, 50)
-
+    }, this.intervalTime)
   }
 
   checkCanRotation(directon) {
@@ -220,7 +234,7 @@ class SceneChessBoard extends Phaser.Scene {
 
     if (directon === "l") checkShape.left()
     if (directon === "r") checkShape.right()
-    
+
 
     checkShape.getShape().forEach(({ x, y }) => {
       if (x <= 0 || x > 10) can = false

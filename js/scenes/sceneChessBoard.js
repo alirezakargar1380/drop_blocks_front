@@ -20,47 +20,47 @@ class SceneChessBoard extends Phaser.Scene {
       "center": "center"
     }
     this.shapes = {
-      "L": {
-        name: "L",
-        rotations: {
-          "topRight": false,
-          "downRight": false,
-          "downLeft": false,
-          "topLeft": true
-        }
-      },
-      "T": {
-        name: "T",
-        rotations: {
-          "centerTop": true,
-          "centerRight": false,
-          "centerDown": true,
-          "centerLeft": false
-        }
-      },
-      "LT": {
-        name: "LT",
-        rotations: {
-          "top": false,
-          "right": true,
-          "down": false,
-          "left": false
-        }
-      },
-      "ZL": {
-        name: "ZL",
-        rotations: {
-          left: true,
-          top: false
-        }
-      },
-      "ZR": {
-        name: "ZR",
-        rotations: {
-          right: true,
-          top: false
-        }
-      },
+      // "L": {
+      //   name: "L",
+      //   rotations: {
+      //     "topRight": false,
+      //     "downRight": false,
+      //     "downLeft": false,
+      //     "topLeft": true
+      //   }
+      // },
+      // "T": {
+      //   name: "T",
+      //   rotations: {
+      //     "centerTop": true,
+      //     "centerRight": false,
+      //     "centerDown": true,
+      //     "centerLeft": false
+      //   }
+      // },
+      // "LT": {
+      //   name: "LT",
+      //   rotations: {
+      //     "top": false,
+      //     "right": true,
+      //     "down": false,
+      //     "left": false
+      //   }
+      // },
+      // "ZL": {
+      //   name: "ZL",
+      //   rotations: {
+      //     left: true,
+      //     top: false
+      //   }
+      // },
+      // "ZR": {
+      //   name: "ZR",
+      //   rotations: {
+      //     right: true,
+      //     top: false
+      //   }
+      // },
       "I": {
         name: "I",
         rotations: {
@@ -127,7 +127,7 @@ class SceneChessBoard extends Phaser.Scene {
 
     // =============================================================================== DRAW SHAPE
     let selectedShapee = this.shapes["I"]
-    this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 2, y: 1 }, this.selectRandomColor())
+    this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 8, y: 1 }, this.selectRandomColor())
     // this.checkCanRotation()
     this.nextShapeName = this.selectRandomShapeName()
 
@@ -141,10 +141,11 @@ class SceneChessBoard extends Phaser.Scene {
         if (!this.checkCanRotation("r")) {
           console.error("you can't go right")
         } else {
+          console.info("goes right")
           this.sh.right()
           this.removeAndDraw()
         }
-        console.log("right")
+        // console.log("right")
 
         // socket.emit("right")
       }
@@ -159,7 +160,7 @@ class SceneChessBoard extends Phaser.Scene {
       }
 
       if (angle > 315 && angle <= 360 || angle >= 0 && angle < 45) {
-        this.intervalTime = 400
+        this.intervalTime = 100
         this.movement()
         console.log("down")
         // socket.emit("speed", "fast")
@@ -177,13 +178,15 @@ class SceneChessBoard extends Phaser.Scene {
     }, this)
 
     this.input.on('pointerup', function (pointer) {
-      if (this.clicked) {
+      console.log(this.checkCanRotation())
+      if (this.clicked && this.checkCanRotation()) {
         console.log("clicked")
+
         this.sh.getNextRotation()
         this.removeAndDraw()
       }
 
-      if (this.intervalTime === 400) {
+      if (this.intervalTime === 100) {
         this.intervalTime = 800
         this.movement()
       }
@@ -225,7 +228,7 @@ class SceneChessBoard extends Phaser.Scene {
         return
       }
 
-      
+
       this.removeAndDraw()
 
     }, this.intervalTime)
@@ -234,30 +237,48 @@ class SceneChessBoard extends Phaser.Scene {
   checkColumnIsFull() {
     if (this.lose) return
     for (let x = 1; x <= 10; x++) {
-        let name = x + "," + 1
-        if (this.blocks[name.toString()]) {
-          this.lose = true
-          return false
-          break;
-        }
+      let name = x + "," + 1
+      if (this.blocks[name.toString()]) {
+        this.lose = true
+        return false
+        break;
+      }
     }
     return true
   }
 
   checkCanRotation(directon) {
     let can = true
-    const checkShape = new Shape(this.sh.shapeName, this.sh.shapeRotaions, {
+    const checkShape = new Shape(this.sh.shapeName, { ...this.sh.shapeRotaions }, {
       x: this.sh.center.x,
       y: this.sh.center.y + 1
-    })
+    }, "b_b")
 
     if (directon === "l") checkShape.left()
     if (directon === "r") checkShape.right()
 
-
     checkShape.getShape().forEach(({ x, y }) => {
-      if (x <= 0 || x > 10) can = false
+      if (x <= 0 || x > 10) {
+        can = false
+      }
     })
+
+    if (can) {
+      checkShape.getNextRotation()
+      const newCoor = checkShape.getShape().map(({ x, y }) => {
+        return x + "," + y
+      })
+
+      Object.keys(this.blocks).forEach((key) => {
+        const coor = key.split(",")
+        let nx = parseInt(coor[0])
+        let ny = parseInt(coor[1])
+        if (newCoor.includes(nx + "," + ny)) {
+          can = false
+          return
+        }
+      })
+    }
 
     return can
   }
@@ -298,7 +319,7 @@ class SceneChessBoard extends Phaser.Scene {
             let ny = parseInt(coor[1])
             let colorName = this.blocks[nx + "," + ny].name
 
-            if (ny < completedY) {
+            if (ny <= completedY) {
               this.tweens.add({
                 targets: this.blocks[nx + "," + ny],
                 props: {
@@ -308,7 +329,14 @@ class SceneChessBoard extends Phaser.Scene {
                   }
                 }
               })
+
+              setTimeout(() => {
+                this.blocks[nx + "," + ny + 1] = this.blocks[nx + "," + ny]
+                delete this.blocks[nx + "," + ny]
+              }, 100)
             }
+
+
 
             return
             this.blocks[nx + "," + ny].destroy()
@@ -1580,10 +1608,6 @@ class Shape extends getShapeCoordinate {
   }
 
   right() {
-    if (this.center.x >= 9) {
-      return false
-    }
-
     this.center.x++
     return true
   }

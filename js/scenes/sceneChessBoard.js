@@ -20,47 +20,47 @@ class SceneChessBoard extends Phaser.Scene {
       "center": "center"
     }
     this.shapes = {
-      // "L": {
-      //   name: "L",
-      //   rotations: {
-      //     "topRight": false,
-      //     "downRight": false,
-      //     "downLeft": false,
-      //     "topLeft": true
-      //   }
-      // },
-      // "T": {
-      //   name: "T",
-      //   rotations: {
-      //     "centerTop": true,
-      //     "centerRight": false,
-      //     "centerDown": true,
-      //     "centerLeft": false
-      //   }
-      // },
-      // "LT": {
-      //   name: "LT",
-      //   rotations: {
-      //     "top": false,
-      //     "right": true,
-      //     "down": false,
-      //     "left": false
-      //   }
-      // },
-      // "ZL": {
-      //   name: "ZL",
-      //   rotations: {
-      //     left: true,
-      //     top: false
-      //   }
-      // },
-      // "ZR": {
-      //   name: "ZR",
-      //   rotations: {
-      //     right: true,
-      //     top: false
-      //   }
-      // },
+      "L": {
+        name: "L",
+        rotations: {
+          "topRight": false,
+          "downRight": false,
+          "downLeft": false,
+          "topLeft": true
+        }
+      },
+      "T": {
+        name: "T",
+        rotations: {
+          "centerTop": true,
+          "centerRight": false,
+          "centerDown": true,
+          "centerLeft": false
+        }
+      },
+      "LT": {
+        name: "LT",
+        rotations: {
+          "top": false,
+          "right": true,
+          "down": false,
+          "left": false
+        }
+      },
+      "ZL": {
+        name: "ZL",
+        rotations: {
+          left: true,
+          top: false
+        }
+      },
+      "ZR": {
+        name: "ZR",
+        rotations: {
+          right: true,
+          top: false
+        }
+      },
       "I": {
         name: "I",
         rotations: {
@@ -138,25 +138,33 @@ class SceneChessBoard extends Phaser.Scene {
       let angle = this.get_angle(this.clickedPositions.x, this.clickedPositions.y, pointer.x, pointer.y)
 
       if (angle >= 45 && angle <= 135) {
-        if (!this.checkCanRotation("r")) {
-          console.error("you can't go right")
-        } else {
-          console.info("goes right")
-          this.sh.right()
-          this.removeAndDraw()
-        }
+
+        this.dirInt = setInterval(() => {
+          if (!this.checkCanRotation("r")) {
+            console.error("you can't go right")
+          } else {
+            console.info("goes right")
+            this.sh.right()
+            this.removeAndDraw()
+          }
+        }, 200)
+
         // console.log("right")
 
         // socket.emit("right")
       }
 
       if (angle > 225 && angle <= 315) {
-        if (!this.checkCanRotation("l")) {
-          console.error("you can't go left")
-        } else {
-          this.sh.left()
-          this.removeAndDraw()
-        }
+        this.dirInt = setInterval(() => {
+          if (!this.checkCanRotation("l")) {
+            console.error("you can't go left")
+          } else {
+            this.sh.left()
+            this.removeAndDraw()
+          }
+        }, 200)
+
+
       }
 
       if (angle > 315 && angle <= 360 || angle >= 0 && angle < 45) {
@@ -189,6 +197,10 @@ class SceneChessBoard extends Phaser.Scene {
       if (this.intervalTime === 100) {
         this.intervalTime = 800
         this.movement()
+      }
+
+      if (this.dirInt) {
+        clearInterval(this.dirInt)
       }
 
       this.clicked = false
@@ -291,9 +303,11 @@ class SceneChessBoard extends Phaser.Scene {
 
   completeCloumns() {
     let completedY
+    let homeWeGo = 0
     for (let y = 1; y <= 20; y++) {
 
       let counter = 0
+      
       for (let x = 1; x <= 10; x++) {
         if (this.blocks[x + "," + y]) {
           counter++
@@ -302,6 +316,7 @@ class SceneChessBoard extends Phaser.Scene {
 
       if (counter == 10) {
         completedY = y
+        homeWeGo++
         console.error("COMPLETED", y)
         for (let x = 1; x <= 10; x++) {
           if (this.blocks[x + "," + y]) {
@@ -311,43 +326,34 @@ class SceneChessBoard extends Phaser.Scene {
           }
         }
 
-        setTimeout(() => {
-          // console.log(this.blocks)
+        setTimeout((comy = completedY) => {
           Object.keys(this.blocks).forEach((key) => {
             const coor = key.split(",")
             let nx = parseInt(coor[0])
             let ny = parseInt(coor[1])
-            let colorName = this.blocks[nx + "," + ny].name
 
-            if (ny <= completedY) {
+            if (ny <= comy && this.blocks[nx + "," + ny]) {
+              this.lose = true
+
+              console.log("sss " + homeWeGo)
               this.tweens.add({
                 targets: this.blocks[nx + "," + ny],
                 props: {
                   y: {
-                    value: this.gy(ny + 1),
+                    value: this.gy(ny + homeWeGo),
                     duration: 100,
+                    // duration: 1500,
                   }
                 }
               })
 
               setTimeout(() => {
-                this.blocks[nx + "," + ny + 1] = this.blocks[nx + "," + ny]
+                this.blocks[nx + "," + (ny + homeWeGo)] = this.blocks[nx + "," + ny]
                 delete this.blocks[nx + "," + ny]
               }, 100)
             }
 
-
-
-            return
-            this.blocks[nx + "," + ny].destroy()
-            delete this.blocks[nx + "," + ny]
-            ny++
-            if (ny <= completedY) {
-              console.log(nx, ny, completedY)
-              let img = this.add.image(this.gx(nx), this.gy(ny), colorName);
-              img.name = colorName
-              this.blocks[nx + "," + ny] = img
-            }
+            // return
           })
 
         }, 200)

@@ -126,7 +126,7 @@ class SceneChessBoard extends Phaser.Scene {
     this.add.image(this.gx(12) + 10, this.gy(6) + 15, "line_bg");
 
     // =============================================================================== DRAW SHAPE
-    let selectedShapee = this.shapes["I"]
+    let selectedShapee = this.shapes["T"]
     this.sh = new Shape(selectedShapee.name, selectedShapee.rotations, { x: 8, y: 1 }, this.selectRandomColor())
     // this.checkCanRotation()
     this.nextShapeName = this.selectRandomShapeName()
@@ -138,12 +138,11 @@ class SceneChessBoard extends Phaser.Scene {
       let angle = this.get_angle(this.clickedPositions.x, this.clickedPositions.y, pointer.x, pointer.y)
 
       if (angle >= 45 && angle <= 135) {
-
+        console.info("goes right")
         this.dirInt = setInterval(() => {
           if (!this.checkCanRotation("r")) {
             console.error("you can't go right")
           } else {
-            console.info("goes right")
             this.sh.right()
             this.removeAndDraw()
           }
@@ -155,6 +154,7 @@ class SceneChessBoard extends Phaser.Scene {
       }
 
       if (angle > 225 && angle <= 315) {
+        console.info("goes left")
         this.dirInt = setInterval(() => {
           if (!this.checkCanRotation("l")) {
             console.error("you can't go left")
@@ -163,8 +163,6 @@ class SceneChessBoard extends Phaser.Scene {
             this.removeAndDraw()
           }
         }, 200)
-
-
       }
 
       if (angle > 315 && angle <= 360 || angle >= 0 && angle < 45) {
@@ -186,8 +184,7 @@ class SceneChessBoard extends Phaser.Scene {
     }, this)
 
     this.input.on('pointerup', function (pointer) {
-      console.log(this.checkCanRotation())
-      if (this.clicked && this.checkCanRotation()) {
+      if (this.clicked && this.checkCanRotationr()) {
         console.log("clicked")
 
         this.sh.getNextRotation()
@@ -259,11 +256,47 @@ class SceneChessBoard extends Phaser.Scene {
     return true
   }
 
+  checkCanRotationr() {
+    let can = true
+    const checkShape = new Shape(this.sh.shapeName, { ...this.sh.shapeRotaions }, {
+      x: this.sh.center.x,
+      y: this.sh.center.y
+    }, "b_b")
+
+    checkShape.getNextRotation()
+    checkShape.getShape().forEach(({ x, y }) => {
+      if (x <= 0 || x > 10) {
+        can = false
+      }
+      if (y <= 0 || y > 20) {
+        can = false
+      }
+    })
+
+    if (can) {
+      const newCoor = checkShape.getShape().map(({ x, y }) => {
+        return x + "," + y
+      })
+
+      Object.keys(this.blocks).forEach((key) => {
+        const coor = key.split(",")
+        let nx = parseInt(coor[0])
+        let ny = parseInt(coor[1])
+        if (newCoor.includes(nx + "," + ny)) {
+          can = false
+          return
+        }
+      })
+    }
+
+    return can
+  }
+
   checkCanRotation(directon) {
     let can = true
     const checkShape = new Shape(this.sh.shapeName, { ...this.sh.shapeRotaions }, {
       x: this.sh.center.x,
-      y: this.sh.center.y + 1
+      y: this.sh.center.y
     }, "b_b")
 
     if (directon === "l") checkShape.left()
@@ -273,10 +306,12 @@ class SceneChessBoard extends Phaser.Scene {
       if (x <= 0 || x > 10) {
         can = false
       }
+      if (y <= 0 || y > 20) {
+        can = false
+      }
     })
 
     if (can) {
-      checkShape.getNextRotation()
       const newCoor = checkShape.getShape().map(({ x, y }) => {
         return x + "," + y
       })

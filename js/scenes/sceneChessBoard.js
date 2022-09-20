@@ -93,6 +93,7 @@ class SceneChessBoard extends Phaser.Scene {
       "g_b": "008131"
     }
     this.intervalTime = 800
+    this.lose = false
   }
 
   preload() {
@@ -202,7 +203,8 @@ class SceneChessBoard extends Phaser.Scene {
     if (this.interval) clearInterval(this.interval)
 
     this.interval = setInterval(() => {
-      if (this.counter > 5) return
+      if (this.counter > 15) return
+      if (this.lose) return
       if (!this.sh.drop(Object.keys(this.blocks))) {
 
         this.gameObjects.forEach((gameObjects) => {
@@ -217,12 +219,29 @@ class SceneChessBoard extends Phaser.Scene {
         this.counter++
         this.nextShape()
         this.completeCloumns()
+        if (!this.checkColumnIsFull()) {
+          console.error("you lose")
+        }
         return
       }
 
+      
       this.removeAndDraw()
 
     }, this.intervalTime)
+  }
+
+  checkColumnIsFull() {
+    if (this.lose) return
+    for (let x = 1; x <= 10; x++) {
+        let name = x + "," + 1
+        if (this.blocks[name.toString()]) {
+          this.lose = true
+          return false
+          break;
+        }
+    }
+    return true
   }
 
   checkCanRotation(directon) {
@@ -1533,18 +1552,9 @@ class Shape extends getShapeCoordinate {
     if (checkResult) {
       checkResult = this.canDrop()
       if (!checkResult) this.center.y--
-    } else {
-      console.error("reson is check other blocks")
     }
 
     return checkResult
-
-    if (this.center.y >= 19) {
-      return false
-    }
-
-    this.center.y++
-    return true
   }
 
   checkOtherBlocks(blocks) {
